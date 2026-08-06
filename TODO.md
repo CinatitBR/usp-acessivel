@@ -1,0 +1,2 @@
+- Update MainApp to a StatefulWidget.
+- In the MapLibreMap, use "layers" property instead of "onStyleLoaded". It's the declarative way to update features using state.

@@ -1,0 +1,19 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-46.736279, -23.560738]]
+      },
+      "properties": {
+        "id": "surface-point-103",
+        "path_id": "",
+        "class": "hole",
+        "updated_at": "2026-07-08T17:00:00.000Z",
+        "description": "Passagem de concreto por cima da grama, com a lateral quebrada e despedaçada."
+      }
+    }
+  ]
+}

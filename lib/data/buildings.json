@@ -1,0 +1,17 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.72746, -23.5574559]
+      },
+      "properties": {
+        "id": "inova-usp",
+        "class": "building",
+        "name": "Inova USP"
+      }
+    }
+  ]
+}

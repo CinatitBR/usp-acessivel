@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.727722, -23.557435]
+      },
+      "properties": {
+        "id": "leisure-101",
+        "building_id": "",
+        "class": "rest",
+        "name": "Área de descanso",
+        "updated_at": "2026-07-08T17:00:00.000Z",
+        "description": "Espaço arejado entre prédios, ao livre, com sombra e mesa e bancos."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.728062, -23.561986]
+      },
+      "properties": {
+        "id": "leisure-102",
+        "building_id": "",
+        "class": "rest",
+        "name": "Área de descanso",
+        "updated_at": "2026-07-08T17:00:00.000Z",
+        "description": "Espaço ao ar livre, rente à calçada de concreto e em cima da grama, com mesa, bancos e lixeira."
+      }
+    }
+  ]
+}

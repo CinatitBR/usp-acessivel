@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.727722, -23.557435]
+      },
+      "properties": {
+        "id": "leisure-101",
+        "class": "leisure",
+        "media": {
+          "photo_url": "/images/leisure/leisure-101/photo.jpg",
+          "thumbnail_url": "/images/leisure/leisure-101/photo.jpg"
+        },
+        "description": "Espaço arejado entre prédios, ao livre, com sombra e mesa e bancos.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.728062, -23.561986]
+      },
+      "properties": {
+        "id": "leisure-102",
+        "class": "leisure",
+        "media": {
+          "photo_url": "/images/leisure/leisure-102/photo.jpg",
+          "thumbnail_url": "/images/leisure/leisure-102/photo.jpg"
+        },
+        "description": "Espaço ao ar livre, rente à calçada de concreto e em cima da grama, com mesa, bancos e lixeira.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    }
+  ]
+}

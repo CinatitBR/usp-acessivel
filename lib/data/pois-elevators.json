@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.72746, -23.5574559]
+      },
+      "properties": {
+        "id": "inova-usp",
+        "building_id": "inova-usp",
+        "class": "elevator",
+        "name": "Elevador 1 Inova",
+        "updated_at": "2026-07-02T15:55:00.000Z",
+
+        "floors": [1, 2, 3],
+        "dimensions": {
+          "width_meters": 2.0,
+          "length_meters": 3.0
+        },
+        "visual_route": [
+          {
+            "step_number": 0,
+            "title": "Siga o caminho esquerdo",
+            "description": "Em direção aos bancos"
+          },
+          {
+            "step_number": 1,
+            "title": "Vire à esquerda",
+            "description": ""
+          },
+          {
+            "step_number": 2,
+            "title": "Siga em direção à porta",
+            "description": ""
+          },
+          {
+            "step_number": 3,
+            "title": "Entre e vire à esquerda",
+            "description": ""
+          },
+          {
+            "step_number": 4,
+            "title": "Siga em frente",
+            "description": "Siga até avistar o elevador à esquerda"
+          },
+          {
+            "step_number": 5,
+            "title": "📌 Você chegou!",
+            "description": ""
+          }
+        ]
+      }
+    }
+  ]
+}

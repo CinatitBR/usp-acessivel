@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.734735, -23.560584]
+      },
+      "properties": {
+        "id": "surface-point-101",
+        "category": "surface_point",
+        "media": {
+          "photo_url": "/images/surface-points/surface-point-101/photo.jpg",
+          "thumbnail_url": "/images/surface-points/surface-point-101/photo.jpg"
+        },
+        "description": "Piso de paralelepípedo irregular com buracos e raízes de árvores expostas.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.735167, -23.560489]
+      },
+      "properties": {
+        "id": "surface-point-102",
+        "category": "surface_point",
+        "media": {
+          "photo_url": "/images/surface-points/surface-point-103/photo.jpg",
+          "thumbnail_url": "/images/surface-points/surface-point-103/photo.jpg"
+        },
+        "description": "Piso regular com dois tipos de paralelepípedos.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.736279, -23.560738]
+      },
+      "properties": {
+        "id": "surface-point-103",
+        "category": "surface_point",
+        "media": {
+          "photo_url": "/images/surface-points/surface-point-103/photo.jpg",
+          "thumbnail_url": "/images/surface-points/surface-point-103/photo.jpg"
+        },
+        "description": "Passagem de concreto por cima da grama, com a lateral quebrada e despedaçada.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.728325, -23.561705]
+      },
+      "properties": {
+        "id": "surface-point-104",
+        "category": "surface_point",
+        "media": {
+          "photo_url": "/images/surface-points/surface-point-104/photo.jpg",
+          "thumbnail_url": "/images/surface-points/surface-point-104/photo.jpg"
+        },
+        "description": "Passagem de concreto estreita, por cima da grama, feita de concreto remendado levemente irregular.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.728231, -23.557302]
+      },
+      "properties": {
+        "id": "surface-point-105",
+        "category": "surface_point",
+        "media": {
+          "photo_url": "/images/surface-points/surface-point-105/photo.jpg",
+          "thumbnail_url": "/images/surface-points/surface-point-105/photo.jpg"
+        },
+        "description": "Piso levemente irregular, feito com blocos quadrados de concreto, todos juntos e com frestas entre eles.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    }
+  ]
+}
