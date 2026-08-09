@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:collection/collection.dart'; // Ensure this import is present
+import 'package:collection/collection.dart';
 
 import 'package:flutter/material.dart';
 import 'package:maplibre/maplibre.dart';
