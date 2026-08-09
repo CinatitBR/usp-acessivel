@@ -5,6 +5,10 @@
 
 - Update bufferLineString() in utils.dart to make it similar to turf.buffer() (from the turf js library).
 
+- Tratar imagens da Odontologia
+  1. Converte-las para jpg
+  2.
+
 ## IDEAS
 
 - Ideia: adicionar sprites com personagens interativos que explicam sobre o mapa, estilo Pokémon.
