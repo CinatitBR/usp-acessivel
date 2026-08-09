@@ -21,3 +21,4 @@ flutter:
   assets:
     - lib/data/buildings.json
     - lib/data/ways.json
+    - assets/tiles/

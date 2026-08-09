@@ -1,10 +1,9 @@
-// import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'dart:ui' as ui;
+import 'package:collection/collection.dart'; // Ensure this import is present
 
 import 'package:flutter/material.dart';
 import 'package:maplibre/maplibre.dart';
-// import 'models.dart';
+import 'package:meu_campus_flutter/utils.dart';
 
 Future<List<Feature<Point>>> loadBuildings() async {
   final jsonString = await rootBundle.loadString('lib/data/buildings.json');
@@ -75,38 +74,54 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   late final MapController _controller;
-  // late final Future<List<Feature<Point>>> _buildingsFuture;
   late final Future<List<Feature<LineString>>> _waysFuture;
-  Feature<LineString>? _selectedWay;
 
   @override
   void initState() {
     super.initState();
-    // _buildingsFuture = loadBuildings();
     _waysFuture = loadWays();
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return MaterialApp(
-  //     home: Scaffold(
-  //           body: MapLibreMap(
-  //             options: MapOptions(
-  //               initStyle: "https://tiles.openfreemap.org/styles/liberty",
-  //               initCenter: initCenter,
-  //               initZoom: 17,
-  //               maxBounds: campusBounds,
-  //           ),
-  //           layers: [
-  //           CircleLayer(
-  //             points: _buildingsFuture.,
-  //             color: Colors.blue,
-  //           )
-  //         ],
-  //         )
-  //       )
-  //   );
-  // }
+  void _handleMapClick(MapEventClick event) async {
+    final features = _controller.featuresAtPoint(
+      event.screenPoint,
+      layerIds: ['ways'],
+    );
+    // features contain the clicked features
+    print("Features clicked: $features");
+
+    if (features.isEmpty) {
+      // Clear 'selected-way' source
+      await _controller.style?.updateGeoJsonSource(
+        id: 'selected-way',
+        data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
+      );
+      return;
+    }
+
+    final loadedWays = await _waysFuture;
+    final selectedWay = features.first;
+
+    // Find matching feature from loaded snapshot
+    final wayFeature = loadedWays.firstWhereOrNull((feat) {
+      return feat.properties["@id"] == selectedWay.properties["@id"];
+    });
+
+    // 2. Safely extract non-nullable LineString geometry
+    final geometry = wayFeature?.geometry;
+
+    if (geometry != null) {
+      // 0.0001 degrees ~= 11 meters
+      final bufferGeometry = bufferLineString(geometry, 0.00002);
+      // Create buffer polygon
+      final wayBuffer = Feature(geometry: bufferGeometry);
+
+      await _controller.style?.updateGeoJsonSource(
+        id: 'selected-way',
+        data: wayBuffer.toString(),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +130,11 @@ class _MainAppState extends State<MainApp> {
         future: _waysFuture,
         builder: (context, snapshot) {
           if (snapshot.hasError) print(snapshot.error);
+
+          if (!snapshot.hasData) {
+            return Text("Carregando.");
+          }
+
           return Scaffold(
             body: MapLibreMap(
               options: MapOptions(
@@ -126,25 +146,9 @@ class _MainAppState extends State<MainApp> {
               onMapCreated: (controller) => _controller = controller,
               onEvent: (event) async {
                 if (event is MapEventClick) {
-                  final features = _controller.featuresAtPoint(
-                    event.screenPoint,
-                    layerIds: ['ways'],
-                  );
-
-                  if (features.isNotEmpty) {
-                    print("Features clicked: $features");
-                  }
+                  _handleMapClick(event);
                 }
               },
-              // layers: [
-              //   PolylineLayer(
-              //     polylines: snapshot.data ?? [],
-              //     color: Colors.pinkAccent,
-              //     width: 10,
-              //     blur: 3,
-              //     minZoom: 17,
-              //   ),
-              // ],
               onStyleLoaded: (style) async {
                 final buildingsStr = await rootBundle.loadString(
                   'lib/data/buildings.json',
@@ -157,6 +161,22 @@ class _MainAppState extends State<MainApp> {
                   GeoJsonSource(id: 'buildings', data: buildingsStr),
                 );
                 await style.addSource(GeoJsonSource(id: 'ways', data: waysStr));
+                // Texture
+                await style.addImageFromAssets(
+                  id: 'concreto-escuro',
+                  asset: 'assets/tiles/concreto-escuro.png',
+                );
+
+                // Create selected way source, initially empty.
+                // It has exactly one feature when the way is selected and shown.
+                await style.addSource(
+                  GeoJsonSource(
+                    id: 'selected-way',
+                    data: FeatureCollection(
+                      List<Feature<Geometry>>.empty(),
+                    ).toString(),
+                  ),
+                );
 
                 // await style.addImage('building-icon', iconData);
                 await style.addImageFromIconData(
@@ -182,6 +202,19 @@ class _MainAppState extends State<MainApp> {
                       'line-opacity': 0.8,
                     },
                     minZoom: 18,
+                  ),
+                );
+
+                // --- Selected way buffer layer (Fill layer for Polygons) ---
+                await style.addLayer(
+                  const FillStyleLayer(
+                    sourceId: 'selected-way',
+                    id: 'selected-way-fill',
+                    paint: {
+                      'fill-color': '#FF4081',
+                      // 'fill-opacity': 0.8,
+                      'fill-pattern': 'concreto-escuro',
+                    },
                   ),
                 );
 
@@ -213,25 +246,6 @@ class _MainAppState extends State<MainApp> {
                   ),
                 );
               },
-              //   onStyleLoaded: (style) async {
-              //     await style.addSource(
-              //       GeoJsonSource(id: 'buildings', data: snapshot.data ?? ''),
-              //     );
-
-              //     // Add layer to display the source data
-              //     await style.addLayer(
-              //       const CircleStyleLayer(
-              //         sourceId: 'buildings',
-              //         id: 'buildings',
-              //         paint: {'circle-color': '#4169E1', 'circle-radius': 30},
-              //         // layout: {
-              //         //   'circle-color': '#4169E1',
-              //         //   'circle-radius': 10,
-              //         // }
-              //       ),
-              //     );
-              //   },
-              // ),
             ),
           );
         },
