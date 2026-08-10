@@ -1,3 +1,12 @@
+### Add Odonto routes
+
+- \*Encode routes in lib/data/rotas-odonto.json
+- Create UI: Copy Thai app UI to show the routes
+- ->Code UI into Flutter: static elements on the UI
+- Insert JSON data into the UI
+
+---
+
 - Optimize data handling
   1. Decide how all the ways (features) should be stored in memory (Map<String, dynamic>, Feature<LineString>...)
 
@@ -5,11 +14,17 @@
 
 - Update bufferLineString() in utils.dart to make it similar to turf.buffer() (from the turf js library).
 
-- Tratar imagens da Odontologia
-  1. Converte-las para jpg
-  2.
-
 ## IDEAS
 
 - Ideia: adicionar sprites com personagens interativos que explicam sobre o mapa, estilo Pokémon.
   - Adiconar vídeo flutuante de pessoa explicando sobre o mapa.
+
+## Image processing
+
+Script to convert .HEIC to .webp (using heif-convert, imagemagick):
+
+```bash
+for f in *.HEIC; do heif-convert "$f" "${f%.HEIC}.png" && magick "${f%.HEIC}.png" -quality 80 -resize '1200>' "../rotas-odonto-menor/${f%.HEIC}.webp"; done
+```
+
+There's also a Python script to extract GPS data and save to a JSON file. The script will soon be updated to execute all the processing pipeline (conversion + GPS extraction), and will be uploaded to a GitHub repo.

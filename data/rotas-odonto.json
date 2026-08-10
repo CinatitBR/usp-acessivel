@@ -1,0 +1,42 @@
+[
+  {
+    "id": 0,
+    "title": "Rotas para a Clínica Odontológica",
+    "img-sequence": ["interior-1.webp", "interior-3.webp", "interior-4.webp"]
+  },
+  {
+    "id": 1,
+    "title": "Rotas para banheiro 1º andar",
+    "img-sequence": [
+      "interior-1.webp",
+      "interior-2.webp",
+      "interior-6.webp",
+      "interior-7.webp",
+      "interior-8.webp",
+      "interior-9.webp",
+      "interior-10.webp"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Rota até o elevador para acesso aos outros andares",
+    "img-sequence": [
+      "interior-1.webp",
+      "interior-2.webp",
+      "interior-6.webp",
+      "interior-7.webp",
+      "interior-12.webp",
+      "interior-13.webp",
+      "interior-14.webp",
+      "interior-15.webp",
+      "interior-16.webp",
+      "interior-17.webp",
+      "interior-18.webp",
+      "interior-19.webp",
+      "interior-20.webp",
+      "interior-21.webp",
+      "interior-22.webp",
+      "interior-23.webp"
+    ]
+  }
+]

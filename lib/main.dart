@@ -82,6 +82,90 @@ class _MainAppState extends State<MainApp> {
     _waysFuture = loadWays();
   }
 
+  void _handleStyleLoaded(StyleController style) async {
+    final buildingsStr = await rootBundle.loadString('lib/data/buildings.json');
+    final waysStr = await rootBundle.loadString('lib/data/ways.json');
+
+    // --- Sources and assets ---
+    await style.addSource(GeoJsonSource(id: 'buildings', data: buildingsStr));
+    await style.addSource(GeoJsonSource(id: 'ways', data: waysStr));
+    await style.addImageFromAssets(
+      id: 'concreto-escuro',
+      asset: 'assets/tiles/concreto-escuro.png',
+    ); // Texture
+
+    // Create selected way source, initially empty.
+    // It has exactly one feature when the way is selected and shown.
+    await style.addSource(
+      GeoJsonSource(
+        id: 'selected-way',
+        data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
+      ),
+    );
+
+    await style.addImageFromIconData(
+      iconData: Icons.apartment,
+      id: 'building-icon',
+      size: 40,
+    );
+
+    // --- Layers ---
+
+    // Ways layer
+    await style.addLayer(
+      const LineStyleLayer(
+        sourceId: 'ways',
+        id: 'ways',
+        layout: {
+          'line-cap': 'round', // Rounds the start and end tips of the lines
+          'line-join': 'round', // Rounds sharp corners where line segments meet
+        },
+        paint: {
+          'line-color': '#837F7F',
+          'line-width': 18.0,
+          'line-opacity': 0.8,
+        },
+        minZoom: 18,
+      ),
+    );
+
+    // Selected way buffer layer (Fill layer for Polygons)
+    await style.addLayer(
+      const FillStyleLayer(
+        sourceId: 'selected-way',
+        id: 'selected-way-fill',
+        paint: {'fill-color': '#FF4081', 'fill-pattern': 'concreto-escuro'},
+      ),
+    );
+
+    // Buildings
+    await style.addLayer(
+      const SymbolStyleLayer(
+        sourceId: 'buildings',
+        id: 'buildings',
+        layout: {
+          'text-field': 'Inova-USP',
+          'icon-image': 'building-icon',
+          'text-size': 20,
+          'text-anchor': 'top',
+          'text-offset': [0, 1],
+        },
+        paint: {
+          // --- Text styling ---
+          'text-color': '#FFFFFF', // Fill color (White)
+          'text-halo-color': '#808080', // Stroke/Outline color (Grey Hex code)
+          'text-halo-width': 2.0, // Stroke thickness in pixels
+          // --- Icon Styling (Requires SDF Icon) ---
+          'icon-color':
+              '#FFFFFF', // Change this to your desired Icon Fill Color (e.g., Red)
+          'icon-halo-color':
+              '#808080', // Change this to your desired Icon Stroke/Outline Color (e.g., Black)
+          'icon-halo-width': 1.5, // Icon Stroke thickness in pixels
+        },
+      ),
+    );
+  }
+
   void _handleMapClick(MapEventClick event) async {
     final features = _controller.featuresAtPoint(
       event.screenPoint,
@@ -140,101 +224,7 @@ class _MainAppState extends State<MainApp> {
               _handleMapClick(event);
             }
           },
-          onStyleLoaded: (style) async {
-            final buildingsStr = await rootBundle.loadString(
-              'lib/data/buildings.json',
-            );
-            final waysStr = await rootBundle.loadString('lib/data/ways.json');
-
-            await style.addSource(
-              GeoJsonSource(id: 'buildings', data: buildingsStr),
-            );
-            await style.addSource(GeoJsonSource(id: 'ways', data: waysStr));
-            // Texture
-            await style.addImageFromAssets(
-              id: 'concreto-escuro',
-              asset: 'assets/tiles/concreto-escuro.png',
-            );
-
-            // Create selected way source, initially empty.
-            // It has exactly one feature when the way is selected and shown.
-            await style.addSource(
-              GeoJsonSource(
-                id: 'selected-way',
-                data: FeatureCollection(
-                  List<Feature<Geometry>>.empty(),
-                ).toString(),
-              ),
-            );
-
-            // await style.addImage('building-icon', iconData);
-            await style.addImageFromIconData(
-              iconData: Icons.apartment,
-              id: 'building-icon',
-              size: 40,
-            );
-
-            // --- Ways layer ---
-            await style.addLayer(
-              const LineStyleLayer(
-                sourceId: 'ways',
-                id: 'ways',
-                layout: {
-                  'line-cap':
-                      'round', // Rounds the start and end tips of the lines
-                  'line-join':
-                      'round', // Rounds sharp corners where line segments meet
-                },
-                paint: {
-                  'line-color': '#837F7F',
-                  'line-width': 18.0,
-                  'line-opacity': 0.8,
-                },
-                minZoom: 18,
-              ),
-            );
-
-            // --- Selected way buffer layer (Fill layer for Polygons) ---
-            await style.addLayer(
-              const FillStyleLayer(
-                sourceId: 'selected-way',
-                id: 'selected-way-fill',
-                paint: {
-                  'fill-color': '#FF4081',
-                  // 'fill-opacity': 0.8,
-                  'fill-pattern': 'concreto-escuro',
-                },
-              ),
-            );
-
-            // --- Buildings layer ---
-            await style.addLayer(
-              const SymbolStyleLayer(
-                sourceId: 'buildings',
-                id: 'buildings',
-                layout: {
-                  'text-field': 'Inova-USP',
-                  'icon-image': 'building-icon',
-                  'text-size': 20,
-                  'text-anchor': 'top',
-                  'text-offset': [0, 1],
-                },
-                paint: {
-                  // --- Text styling ---
-                  'text-color': '#FFFFFF', // Fill color (White)
-                  'text-halo-color':
-                      '#808080', // Stroke/Outline color (Grey Hex code)
-                  'text-halo-width': 2.0, // Stroke thickness in pixels
-                  // --- Icon Styling (Requires SDF Icon) ---
-                  'icon-color':
-                      '#FFFFFF', // Change this to your desired Icon Fill Color (e.g., Red)
-                  'icon-halo-color':
-                      '#808080', // Change this to your desired Icon Stroke/Outline Color (e.g., Black)
-                  'icon-halo-width': 1.5, // Icon Stroke thickness in pixels
-                },
-              ),
-            );
-          },
+          onStyleLoaded: _handleStyleLoaded,
         ),
       ),
     );

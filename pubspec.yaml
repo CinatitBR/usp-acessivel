@@ -20,6 +20,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - lib/data/buildings.json
-    - lib/data/ways.json
+    - data/buildings.json
+    - data/ways.json
     - assets/tiles/
