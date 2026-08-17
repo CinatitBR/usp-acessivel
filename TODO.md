@@ -1,9 +1,7 @@
-### Add Odonto routes
+### Show routes stored in the backend
 
-- \*Encode routes in lib/data/rotas-odonto.json
-- Create UI: Copy Thai app UI to show the routes
-- ->Code UI into Flutter: static elements on the UI
-- Insert JSON data into the UI
+- Fetch all the routes data from the backend (D1 and R2)
+- Shouw each route in the screen, using the widgets in route_page.dart
 
 ---
 
