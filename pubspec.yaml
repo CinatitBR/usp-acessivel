@@ -19,6 +19,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: fonts/Manrope-VariableFont_wght.ttf
   assets:
     - data/buildings.json
     - data/ways.json

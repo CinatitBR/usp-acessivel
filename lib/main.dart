@@ -18,6 +18,7 @@ class MainApp extends StatelessWidget {
       title: 'Persistent Taskbar Demo',
       theme: ThemeData(
         useMaterial3: true,
+        fontFamily: 'Manrope',
         // Define the default colors for all BottomNavigationBars
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           selectedItemColor: Color(0xFF1B4ACD),
