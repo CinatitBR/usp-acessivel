@@ -1,7 +1,31 @@
+## Add taskbar across all app
+
+- Explorar, Institutos
+
+## Implementar página: Instiutos
+
+- Essa tela exibe os institutos da USP, e suas características.
+
+## Prevent map re-rendering when switching pages
+
+### Fazer
+
+- Exibir os nomes dos institutos em uma lista.
+
+---
+
+### Criar um tipo de dado para rota visual
+
+### Criar um array de rotas visutais de exemplo
+
+### Exibir rotas visuais na tela
+
+### Create icons in the map for each visual route.
+
 ### Show routes stored in the backend
 
 - Fetch all the routes data from the backend (D1 and R2)
-- Shouw each route in the screen, using the widgets in route_page.dart
+- Show each route in the screen, using the widgets in route_page.dart
 
 ---
 
