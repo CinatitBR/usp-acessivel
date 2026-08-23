@@ -1,12 +1,6 @@
-## Add taskbar across all app
+## Create page for visual route
 
-- Explorar, Institutos
-
-## Implementar página: Instiutos
-
-- Essa tela exibe os institutos da USP, e suas características.
-
-## Prevent map re-rendering when switching pages
+- Add visual route for FFLCH
 
 ### Fazer
 

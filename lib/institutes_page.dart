@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 
+import 'visual_route_page.dart';
+
 class InstitutesPage extends StatelessWidget {
   const InstitutesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: .min,
-          spacing: 12,
-          children: [InstituteCard(), InstituteCard1()],
-        ),
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisSize: .min,
+              spacing: 12,
+              children: [InstituteCard(), InstituteCard1()],
+            ),
+          ),
+          VisualRoutePage(),
+        ],
       ),
     );
   }
@@ -37,6 +44,7 @@ class InstituteCard extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
       padding: EdgeInsets.all(16),
+      margin: EdgeInsets.only(left: 20, right: 20),
       decoration: BoxDecoration(
         color: Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(8),
@@ -67,7 +75,7 @@ class InstituteCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 8.0, //  Horizontal gap
-                  runSpacing: 4.0, // Vertical/line gap
+                  runSpacing: 2.0, // Vertical/line gap
                   alignment: .start,
                   children: [
                     CardChip(
