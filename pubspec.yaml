@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   collection: ^1.19.1
+  firebase_core: ^4.13.0
   flutter:
     sdk: flutter
   maplibre: ^0.3.5

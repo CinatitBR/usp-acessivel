@@ -1,3 +1,11 @@
+## App build configuration
+
+- Update applicationId and organization: "usp-acessivel", "com.github.cinatit.usp-acessivel"
+- Update app icon
+- Rerun Firebase configuration (because it's gonna be considered a new app)
+
+---
+
 ## Create page for visual route
 
 - Add visual route for FFLCH
