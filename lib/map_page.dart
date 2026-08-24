@@ -3,7 +3,8 @@ import 'package:collection/collection.dart';
 
 import 'package:flutter/material.dart';
 import 'package:maplibre/maplibre.dart';
-import 'package:meu_campus_flutter/utils.dart';
+
+import './utils.dart';
 
 // const LngLatBounds campusBounds = LngLatBounds(
 //   longitudeWest: -46.745496,

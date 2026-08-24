@@ -14,6 +14,9 @@
 
 - Exibir os nomes dos institutos em uma lista.
 
+new: com.github.cinatitbr.usp_acessivel
+old: com.example.meu_campus_flutter
+
 ---
 
 ### Criar um tipo de dado para rota visual
