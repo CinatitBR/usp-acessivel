@@ -18,58 +18,60 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const textTheme = TextTheme(
+      displaySmall: TextStyle(
+        // === Display ===
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+      ),
+      headlineLarge: TextStyle(
+        // === Heading ===
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+      ),
+      titleLarge: TextStyle(
+        // === Title ===
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+      ),
+      titleMedium: TextStyle(
+        // === Subtitle ===
+        fontSize: 20,
+        fontWeight: FontWeight.w500,
+      ),
+      bodyLarge: TextStyle(
+        // === Body ===
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+      ),
+      bodyMedium: TextStyle(
+        // === Body small ===
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+      ),
+      labelMedium: TextStyle(
+        // === Label ===
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+      labelSmall: TextStyle(
+        // === Description ===
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+
     return MaterialApp(
       title: 'USP Acessível',
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Manrope',
-        textTheme: const TextTheme(
-          displaySmall: TextStyle(
-            // === Display ===
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-          ),
-          headlineLarge: TextStyle(
-            // === Heading ===
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-          ),
-          titleLarge: TextStyle(
-            // === Title ===
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-          titleMedium: TextStyle(
-            // === Subtitle ===
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-          ),
-          bodyLarge: TextStyle(
-            // === Body ===
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-          ),
-          bodyMedium: TextStyle(
-            // === Body small ===
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-          ),
-          labelMedium: TextStyle(
-            // === Label ===
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-          labelSmall: TextStyle(
-            // === Description ===
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        textTheme: textTheme,
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
           selectedItemColor: AppColors.primary,
           unselectedItemColor: Color(0xFF737373),
-          selectedLabelStyle: TextStyle(fontSize: 17),
-          unselectedLabelStyle: TextStyle(fontSize: 17),
+          selectedLabelStyle: textTheme.labelMedium,
+          unselectedLabelStyle: textTheme.labelMedium,
           selectedIconTheme: IconThemeData(size: 28),
           unselectedIconTheme: IconThemeData(size: 28),
         ),
@@ -80,7 +82,6 @@ class MainApp extends StatelessWidget {
           ),
         ),
       ),
-      // Set MainScreen as your home. No complex onGenerateRoute needed for basic tabs!
       home: const MainScreen(),
     );
   }
@@ -98,7 +99,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   // 2. Ordered list of pages matching the bottom taskbar indexes
-  final List<Widget> _pages = const [
+  final List<Widget> _pages = [
     MapPage(),
     InstitutesPage(),
     CreateVisualRoutePage(),
@@ -124,10 +125,6 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Institutos',
             icon: Icon(Icons.school),
           ),
-          // BottomNavigationBarItem(
-          //   label: 'Rotas visuais',
-          //   icon: Icon(Icons.remove_red_eye),
-          // ),
           BottomNavigationBarItem(
             label: 'Rota visual',
             icon: Icon(Icons.remove_red_eye),

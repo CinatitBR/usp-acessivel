@@ -1,8 +1,7 @@
-## App build configuration
+## Add server data to screen
 
-- Update applicationId and organization: "usp-acessivel", "com.github.cinatit.usp-acessivel"
-- Update app icon
-- Rerun Firebase configuration (because it's gonna be considered a new app)
+- Fetch buildings from the server
+- Show buildings on the dropdown in the CreateVisualRoutePage
 
 ---
 
