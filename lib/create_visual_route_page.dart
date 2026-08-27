@@ -5,10 +5,16 @@ import 'package:image_picker/image_picker.dart';
 import 'app_colors.dart';
 
 class RouteStep {
+  final String id; // Changed from 'int order' to a unique string ID
+  // final int order;
   final XFile image;
   final TextEditingController descriptionController;
 
-  RouteStep({required this.image, required this.descriptionController});
+  RouteStep({
+    required this.id,
+    required this.image,
+    required this.descriptionController,
+  });
 }
 
 class CreateVisualRoutePage extends StatefulWidget {
@@ -41,6 +47,14 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       step.descriptionController.dispose();
     }
     super.dispose();
+  }
+
+  void _reorderStep(int oldIndex, int newIndex) {
+    setState(() {
+      // The new API handles index math automatically! Just remove and insert.
+      final RouteStep item = _steps.removeAt(oldIndex);
+      _steps.insert(newIndex, item);
+    });
   }
 
   @override
@@ -118,13 +132,10 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 hint: 'Descreva brevemente o percurso...',
                 controller: _descriptionController,
               ),
-              Text(
-                'Fotos da rota',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
               FilledButton(
-                onPressed: _pickImageAndAddStep,
-                style: FilledButton.styleFrom(fixedSize: Size(200, 40)),
+                onPressed: _pickImagesAndAddStep,
+                style: FilledButton.styleFrom(minimumSize: Size(200, 48)),
                 child: Row(
                   mainAxisAlignment: .center,
                   spacing: 16,
@@ -134,13 +145,31 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                   ],
                 ),
               ),
-              ..._steps.asMap().entries.map((entry) {
-                return _buildStepBox(context, entry.key, entry.value);
-              }),
+              ReorderableListView(
+                shrinkWrap: true, // Crucial inside SingleChildScrollView
+                physics:
+                    const NeverScrollableScrollPhysics(), // Allows page to scroll smoothly together
+                onReorderItem: (int oldIndex, int newIndex) {
+                  _reorderStep(oldIndex, newIndex);
+                },
+                children: List.generate(_steps.length, (index) {
+                  final step = _steps[index];
+
+                  return _buildStepBox(
+                    context,
+                    key: ValueKey(
+                      step.id,
+                    ), // Tracks the unique ID string instead of a volatile integer index
+                    step: step,
+                    stepIndex: index,
+                  );
+                }),
+              ),
+
               FilledButton(
                 onPressed: _onCancel,
                 style: FilledButton.styleFrom(
-                  fixedSize: Size(150, 40),
+                  fixedSize: Size(180, 48),
                   backgroundColor: AppColors.neutral[200],
                 ),
                 child: Text(
@@ -150,7 +179,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
               ),
               FilledButton(
                 onPressed: _onSave,
-                style: FilledButton.styleFrom(fixedSize: Size(150, 40)),
+                style: FilledButton.styleFrom(fixedSize: Size(180, 48)),
                 child: const Text('Salvar rota'),
               ),
             ],
@@ -169,7 +198,12 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     );
   }
 
-  Widget _buildTextField(BuildContext context, {String? hint, int? maxLines, TextEditingController? controller}) {
+  Widget _buildTextField(
+    BuildContext context, {
+    String? hint,
+    int? maxLines,
+    TextEditingController? controller,
+  }) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
@@ -196,14 +230,18 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     );
   }
 
-  Future<void> _pickImageAndAddStep() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+  Future<void> _pickImagesAndAddStep() async {
+    // final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final List<XFile> images = await _picker.pickMultiImage();
+    for (var image in images) {
       setState(() {
-        _steps.add(RouteStep(
-          image: image,
-          descriptionController: TextEditingController(),
-        ));
+        _steps.add(
+          RouteStep(
+            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            image: image,
+            descriptionController: TextEditingController(),
+          ),
+        );
       });
     }
   }
@@ -233,10 +271,14 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       'title': _titleController.text,
       'location': _selectedLocation,
       'description': _descriptionController.text,
-      'steps': _steps.map((step) => {
-        'imagePath': step.image.path,
-        'description': step.descriptionController.text,
-      }).toList(),
+      'steps': _steps
+          .map(
+            (step) => {
+              'imagePath': step.image.path,
+              'description': step.descriptionController.text,
+            },
+          )
+          .toList(),
     };
 
     // In a real app this might post to a server, but for now we print to log
@@ -248,77 +290,126 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     }
 
     // Optionally clear form or show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Rota salva com sucesso!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Rota salva com sucesso!')));
   }
 
-  Widget _buildStepBox(BuildContext context, int index, RouteStep step) {
-    return IntrinsicHeight(
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.max,
+  Widget _buildStepBox(
+    BuildContext context, {
+    required Key key,
+    required RouteStep step,
+    required stepIndex,
+  }) {
+    return Align(
+      alignment: .center,
+      key: key,
+      child: Container(
+        padding: .all(8),
+        margin: EdgeInsets.only(top: 8),
+        decoration: BoxDecoration(
+          border: Border.all(width: 1, color: AppColors.neutral[200]!),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          spacing: 12,
+          mainAxisSize: .min,
+          children: [
+            Column(
+              spacing: 140,
               children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    (index + 1).toString().padLeft(2, '0'),
-                    style: const TextStyle(color: Color(0xFFFFFFFF), fontSize: 12),
-                  ),
-                ),
-                if (index < _steps.length - 1)
-                  const Icon(Icons.arrow_circle_up_rounded),
-              ],
-            ),
-          ),
-          const SizedBox(width: 24),
-          SizedBox(
-            width: 300,
-            child: Column(
-              children: [
-                // 1. Wrap in a Stack to layer widgets on top of each other
-                Stack(
+                Column(
+                  spacing: 12,
                   children: [
-                    Container(
-                      width: 240,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(Radius.circular(8)),
-                        image: DecorationImage(
-                          image: kIsWeb
-                              ? NetworkImage(step.image.path) as ImageProvider
-                              : FileImage(File(step.image.path)),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                    // VISUAL CLUE: The Drag Handle Icon
+                    Icon(
+                      Icons.drag_indicator, // Or Icons.drag_handle
+                      color:
+                          AppColors.neutral[400], // Use a subtle, muted color
+                      size: 24,
                     ),
-                    // 2. Position the close button precisely in the top right corner
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: GestureDetector(
-                        onTap: () => _removeStep(index),
-                        child: _buildCloseButton(),
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: AppColors.primary,
+                      child: Text(
+                        (stepIndex + 1).toString().padLeft(2, '0'),
+                        style: const TextStyle(
+                          color: Color(0xFFFFFFFF),
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                _buildTextField(
-                  context,
-                  hint: 'Descreva brevemente o percurso',
-                  maxLines: 3,
-                  controller: step.descriptionController,
+                Column(
+                  children: [
+                    if (stepIndex > 0)
+                      IconButton(
+                        icon: const Icon(Icons.arrow_circle_up_rounded),
+                        color: AppColors.neutral[400],
+                        iconSize: 32,
+                        onPressed: () {
+                          _reorderStep(stepIndex, stepIndex - 1);
+                        },
+                      ),
+                    if (stepIndex < _steps.length - 1)
+                      IconButton(
+                        icon: const Icon(Icons.arrow_circle_down_rounded),
+                        color: AppColors.neutral[400],
+                        iconSize: 32,
+                        onPressed: () {
+                          _reorderStep(stepIndex, stepIndex + 1);
+                        },
+                      ),
+                  ],
                 ),
               ],
             ),
-          ),
-        ],
+            SizedBox(
+              width: 240,
+              child: Column(
+                children: [
+                  // 1. Wrap in a Stack to layer widgets on top of each other
+                  Stack(
+                    children: [
+                      Container(
+                        width: 180,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(8),
+                          ),
+                          image: DecorationImage(
+                            image: kIsWeb
+                                ? NetworkImage(step.image.path) as ImageProvider
+                                : FileImage(File(step.image.path)),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      // 2. Position the close button precisely in the top right corner
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () => _removeStep(stepIndex),
+                          child: _buildCloseButton(),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    context,
+                    hint: 'Escreva a instrução',
+                    maxLines: 2,
+                    controller: step.descriptionController,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
