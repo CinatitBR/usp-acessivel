@@ -1,8 +1,47 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'app_colors.dart';
 
-class CreateVisualRoutePage extends StatelessWidget {
+class RouteStep {
+  final XFile image;
+  final TextEditingController descriptionController;
+
+  RouteStep({required this.image, required this.descriptionController});
+}
+
+class CreateVisualRoutePage extends StatefulWidget {
   const CreateVisualRoutePage({super.key});
+
+  @override
+  State<CreateVisualRoutePage> createState() => _CreateVisualRoutePageState();
+}
+
+class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
+  String _selectedLocation = 'Apple';
+  final List<RouteStep> _steps = [];
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _locationController.text = _selectedLocation;
+  }
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
+    for (var step in _steps) {
+      step.descriptionController.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +90,22 @@ class CreateVisualRoutePage extends StatelessWidget {
               _buildTextField(
                 context,
                 hint: 'Ex: Entrada acessível para cadeirantes',
+                controller: _titleController,
               ),
               _buildFieldTitle(context, 'Edifício ou instituto'),
               DropdownMenu(
+                controller: _locationController,
                 label: const Text('Selecione o local'),
-                initialSelection: 'Apple',
+                initialSelection: _selectedLocation,
                 onSelected: (String? value) {
-                  print('Selected: $value');
+                  if (value != null) {
+                    setState(() {
+                      _selectedLocation = value;
+                      _locationController.text = value;
+                    });
+                  }
                 },
-                textStyle: TextStyle(color: Color(0xFF1A1C1C)),
+                textStyle: const TextStyle(color: Color(0xFF1A1C1C)),
                 dropdownMenuEntries: const [
                   DropdownMenuEntry(value: 'Apple', label: 'Apple'),
                   DropdownMenuEntry(value: 'Banana', label: 'Banana'),
@@ -70,13 +116,14 @@ class CreateVisualRoutePage extends StatelessWidget {
               _buildTextField(
                 context,
                 hint: 'Descreva brevemente o percurso...',
+                controller: _descriptionController,
               ),
               Text(
                 'Fotos da rota',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               FilledButton(
-                onPressed: () {},
+                onPressed: _pickImageAndAddStep,
                 style: FilledButton.styleFrom(fixedSize: Size(200, 40)),
                 child: Row(
                   mainAxisAlignment: .center,
@@ -87,9 +134,11 @@ class CreateVisualRoutePage extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildStepBox(context),
+              ..._steps.asMap().entries.map((entry) {
+                return _buildStepBox(context, entry.key, entry.value);
+              }),
               FilledButton(
-                onPressed: () {},
+                onPressed: _onCancel,
                 style: FilledButton.styleFrom(
                   fixedSize: Size(150, 40),
                   backgroundColor: AppColors.neutral[200],
@@ -100,7 +149,7 @@ class CreateVisualRoutePage extends StatelessWidget {
                 ),
               ),
               FilledButton(
-                onPressed: () {},
+                onPressed: _onSave,
                 style: FilledButton.styleFrom(fixedSize: Size(150, 40)),
                 child: const Text('Salvar rota'),
               ),
@@ -120,8 +169,9 @@ class CreateVisualRoutePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(BuildContext context, {String? hint, int? maxLines}) {
+  Widget _buildTextField(BuildContext context, {String? hint, int? maxLines, TextEditingController? controller}) {
     return TextField(
+      controller: controller,
       maxLines: maxLines,
       decoration: InputDecoration(
         filled: true,
@@ -146,7 +196,64 @@ class CreateVisualRoutePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStepBox(BuildContext context) {
+  Future<void> _pickImageAndAddStep() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _steps.add(RouteStep(
+          image: image,
+          descriptionController: TextEditingController(),
+        ));
+      });
+    }
+  }
+
+  void _removeStep(int index) {
+    setState(() {
+      _steps[index].descriptionController.dispose();
+      _steps.removeAt(index);
+    });
+  }
+
+  void _onCancel() {
+    setState(() {
+      _titleController.clear();
+      _descriptionController.clear();
+      _selectedLocation = 'Apple';
+      _locationController.text = 'Apple';
+      for (var step in _steps) {
+        step.descriptionController.dispose();
+      }
+      _steps.clear();
+    });
+  }
+
+  void _onSave() {
+    final Map<String, dynamic> routeData = {
+      'title': _titleController.text,
+      'location': _selectedLocation,
+      'description': _descriptionController.text,
+      'steps': _steps.map((step) => {
+        'imagePath': step.image.path,
+        'description': step.descriptionController.text,
+      }).toList(),
+    };
+
+    // In a real app this might post to a server, but for now we print to log
+    if (kDebugMode) {
+      print('==============================');
+      print('ROUTE SAVED IN MEMORY:');
+      print(routeData);
+      print('==============================');
+    }
+
+    // Optionally clear form or show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Rota salva com sucesso!')),
+    );
+  }
+
+  Widget _buildStepBox(BuildContext context, int index, RouteStep step) {
     return IntrinsicHeight(
       child: Row(
         children: [
@@ -155,16 +262,17 @@ class CreateVisualRoutePage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               mainAxisSize: MainAxisSize.max,
-              children: const [
+              children: [
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: AppColors.primary,
                   child: Text(
-                    '01',
-                    style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 12),
+                    (index + 1).toString().padLeft(2, '0'),
+                    style: const TextStyle(color: Color(0xFFFFFFFF), fontSize: 12),
                   ),
                 ),
-                Icon(Icons.arrow_circle_up_rounded),
+                if (index < _steps.length - 1)
+                  const Icon(Icons.arrow_circle_up_rounded),
               ],
             ),
           ),
@@ -179,12 +287,12 @@ class CreateVisualRoutePage extends StatelessWidget {
                     Container(
                       width: 240,
                       height: 240,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.all(Radius.circular(8)),
                         image: DecorationImage(
-                          image: AssetImage(
-                            'assets/rotas-odonto/exterior-3.webp',
-                          ),
+                          image: kIsWeb
+                              ? NetworkImage(step.image.path) as ImageProvider
+                              : FileImage(File(step.image.path)),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -194,9 +302,7 @@ class CreateVisualRoutePage extends StatelessWidget {
                       top: 8,
                       right: 8,
                       child: GestureDetector(
-                        onTap: () {
-                          // Handle close button action here
-                        },
+                        onTap: () => _removeStep(index),
                         child: _buildCloseButton(),
                       ),
                     ),
@@ -207,6 +313,7 @@ class CreateVisualRoutePage extends StatelessWidget {
                   context,
                   hint: 'Descreva brevemente o percurso',
                   maxLines: 3,
+                  controller: step.descriptionController,
                 ),
               ],
             ),

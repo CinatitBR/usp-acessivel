@@ -98,7 +98,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   // 2. Ordered list of pages matching the bottom taskbar indexes
-  final List<Widget> _pages = const [
+  final List<Widget> _pages = [
     MapPage(),
     InstitutesPage(),
     CreateVisualRoutePage(),
