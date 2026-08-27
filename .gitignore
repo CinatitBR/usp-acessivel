@@ -46,3 +46,6 @@ app.*.map.json
 
 # Firebase
 lib/firebase_options.dart
+
+# Local util files
+connect_wifi.sh

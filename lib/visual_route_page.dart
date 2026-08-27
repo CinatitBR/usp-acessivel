@@ -15,6 +15,9 @@ class _VisualRoutePageState extends State<VisualRoutePage> {
   // double _dragPosition = 0.5;
   // late double _sheetPosition = _dragPosition;
 
+  final minChildSize = 0.15;
+  final maxChildSize = 0.95;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -22,10 +25,10 @@ class _VisualRoutePageState extends State<VisualRoutePage> {
         // final double viewHeight = constraints.maxHeight;
 
         return DraggableScrollableSheet(
-          initialChildSize: 0.3, // Percentage of screen taken on init
-          minChildSize: 0.3, // Smallest collapsed state
-          maxChildSize: 0.90, // Expanded peak height
-          snap: true, // Makes sheet snap to discrete steps
+          initialChildSize: minChildSize, // Percentage of screen taken on init
+          minChildSize: minChildSize, // Smallest collapsed state
+          maxChildSize: maxChildSize, // Expanded peak height
+          // snap: true, // Makes sheet snap to discrete steps
           builder: (BuildContext context, ScrollController scrollController) {
             return Container(
               decoration: BoxDecoration(
@@ -48,20 +51,26 @@ class _VisualRoutePageState extends State<VisualRoutePage> {
               ),
               child: Column(
                 children: [
-                  const _SheetHandle(),
-                  Text(
-                    "Rota para os Elevadores",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Color(0xFF133B99),
-                      fontWeight: FontWeight(600),
-                    ),
-                  ),
                   Flexible(
                     child: ListView.builder(
                       controller: scrollController,
                       itemCount: routeData.length,
                       itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return Column(
+                            children: [
+                              const _SheetHandle(),
+                              Text(
+                                "Rota para os Elevadores",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Color(0xFF133B99),
+                                  fontWeight: FontWeight(600),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
                         return Align(
                           alignment: .center,
                           child: Row(
@@ -111,8 +120,8 @@ class _VisualRoutePageState extends State<VisualRoutePage> {
                                     ),
                                     SizedBox(height: 4),
                                     Container(
-                                      // width: 300,
-                                      height: 200,
+                                      width: 300,
+                                      height: 300,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.all(
                                           .circular(8),
@@ -144,8 +153,6 @@ class _VisualRoutePageState extends State<VisualRoutePage> {
       },
     );
   }
-
-  bool get _isOnWeb => kIsWeb;
 }
 
 // Simple drag handle element
