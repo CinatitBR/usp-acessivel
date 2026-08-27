@@ -120,8 +120,8 @@ class _VisualRoutePageState extends State<VisualRoutePage> {
                                     ),
                                     SizedBox(height: 4),
                                     Container(
-                                      // width: 300,
-                                      height: 200,
+                                      width: 300,
+                                      height: 300,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.all(
                                           .circular(8),

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+// Colors
+import 'app_colors.dart';
+
 // Pages
 import 'route_page.dart';
 import 'map_page.dart';
 import 'institutes_page.dart';
+import 'create_visual_route_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -19,13 +23,61 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Manrope',
+        textTheme: const TextTheme(
+          displaySmall: TextStyle(
+            // === Display ===
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+          ),
+          headlineLarge: TextStyle(
+            // === Heading ===
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+          ),
+          titleLarge: TextStyle(
+            // === Title ===
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+          ),
+          titleMedium: TextStyle(
+            // === Subtitle ===
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+          bodyLarge: TextStyle(
+            // === Body ===
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+          ),
+          bodyMedium: TextStyle(
+            // === Body small ===
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+          labelMedium: TextStyle(
+            // === Label ===
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+          labelSmall: TextStyle(
+            // === Description ===
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: Color(0xFF1B4ACD),
+          selectedItemColor: AppColors.primary,
           unselectedItemColor: Color(0xFF737373),
           selectedLabelStyle: TextStyle(fontSize: 17),
           unselectedLabelStyle: TextStyle(fontSize: 17),
           selectedIconTheme: IconThemeData(size: 28),
           unselectedIconTheme: IconThemeData(size: 28),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+          ),
         ),
       ),
       // Set MainScreen as your home. No complex onGenerateRoute needed for basic tabs!
@@ -46,7 +98,11 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   // 2. Ordered list of pages matching the bottom taskbar indexes
-  final List<Widget> _pages = const [MapPage(), InstitutesPage(), RoutePage()];
+  final List<Widget> _pages = const [
+    MapPage(),
+    InstitutesPage(),
+    CreateVisualRoutePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -68,8 +124,12 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Institutos',
             icon: Icon(Icons.school),
           ),
+          // BottomNavigationBarItem(
+          //   label: 'Rotas visuais',
+          //   icon: Icon(Icons.remove_red_eye),
+          // ),
           BottomNavigationBarItem(
-            label: 'Rotas visuais',
+            label: 'Rota visual',
             icon: Icon(Icons.remove_red_eye),
           ),
         ],
