@@ -1,89 +1,183 @@
 import 'package:flutter/material.dart';
-
 import 'app_colors.dart';
 
-class AppBottomSheet extends StatelessWidget {
+class AppBottomSheet extends StatefulWidget {
   const AppBottomSheet({
     super.key,
     required this.child,
     this.maxChildSize = 0.98,
-    this.minChildSize = 0.15,
     this.onDismissed,
   });
 
   final Widget child;
   final double maxChildSize;
-  final double minChildSize;
+  final double minChildSize = 0;
   final VoidCallback? onDismissed;
 
   @override
+  State<AppBottomSheet> createState() => _AppBottomSheetState();
+}
+
+class _AppBottomSheetState extends State<AppBottomSheet>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _sizeAnimation;
+  bool _isClosing = false; // Prevents duplicate dismiss triggers
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 280), // Smooth entry duration
+      vsync: this,
+    );
+
+    _sizeAnimation = Tween<double>(begin: 0.0, end: widget.maxChildSize)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeOutCubic, // Elegant slowing down curve
+            reverseCurve: Curves.easeInCubic,
+          ),
+        );
+
+    // Run the animation immediately when the widget enters the tree
+    _controller.forward();
+  }
+
+  void _animateClose() {
+    if (_isClosing || !mounted) return;
+    setState(() => _isClosing = true);
+
+    _controller.reverse().then((value) {
+      widget.onDismissed?.call();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: NotificationListener<DraggableScrollableNotification>(
-        onNotification: (notification) {
-          if (notification.extent <= minChildSize) {
-            onDismissed?.call();
-          }
-          return false;
-        },
-        child: DraggableScrollableSheet(
-          initialChildSize: maxChildSize,
-          maxChildSize: maxChildSize,
-          minChildSize: minChildSize,
-          snap: true,
-          snapSizes: [0.5],
-          builder: (BuildContext context, ScrollController scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(32),
-                  topRight: Radius.circular(32),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.3),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: SingleChildScrollView(
-                controller: scrollController,
-                child: Column(
-                  children: [
-                    // Top header area containing both the centered handle and right-aligned close button
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(height: 16),
-                        const _SheetHandle(),
-                        Positioned(
-                          right: 16,
-                          child: IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 20),
-                            onPressed: onDismissed,
-                            padding: const EdgeInsets.all(6),
-                            constraints: const BoxConstraints(),
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppColors.neutral[100],
-                              foregroundColor: AppColors.neutral[600],
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
+    return PopScope(
+      canPop: false, // Blocks the default immediate system back pop
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return; // If already popped elsewhere, do nothing
+
+        _animateClose();
+      },
+      child: SizedBox.expand(
+        child: NotificationListener<DraggableScrollableNotification>(
+          onNotification: (notification) {
+            // Only trigger dismiss logic if the entrance animation has finished
+            if (_controller.isCompleted &&
+                // Add a + 0.02 treshold: Flutter restricts scrolling below minChildSize, making exact equality unreliable.
+                notification.extent <= widget.minChildSize + 0.02 &&
+                !_isClosing) {
+              // Triggers the close animation
+              _animateClose();
+              return true;
+            }
+            return false;
+          },
+          child: AnimatedBuilder(
+            animation: _sizeAnimation,
+            builder: (context, _) {
+              final currentAnimatedSize = _sizeAnimation.value;
+
+              // Ensure minChildSize is never greater than the current animating size
+              final dynamicMinSize = widget.minChildSize.clamp(
+                0.0,
+                currentAnimatedSize,
+              );
+
+              return DraggableScrollableSheet(
+                initialChildSize: currentAnimatedSize,
+                maxChildSize: widget.maxChildSize,
+                // When closing via code, lock min to 0.0 so it can slide all the way down
+                minChildSize: _isClosing ? 0.0 : dynamicMinSize,
+                snap: !_isClosing, // Disable snapping during closing phase
+                snapSizes: const [0.5],
+                builder:
+                    (BuildContext context, ScrollController scrollController) {
+                      return _SheetContainer(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          child: Column(
+                            children: [
+                              _SheetHeader(onClose: _animateClose),
+                              widget.child,
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                    child,
-                  ],
-                ),
-              ),
-            );
-          },
+                      );
+                    },
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _SheetContainer extends StatelessWidget {
+  const _SheetContainer({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.3),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SheetHeader extends StatelessWidget {
+  const _SheetHeader({required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(height: 54),
+        const _SheetHandle(),
+        Positioned(
+          top: 8,
+          right: 16,
+          child: IconButton(
+            icon: Icon(
+              Icons.close_rounded,
+              size: 28,
+              color: AppColors.neutral[500],
+            ),
+            onPressed: onClose,
+            padding: const EdgeInsets.all(6),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -99,42 +193,8 @@ class _SheetHandle extends StatelessWidget {
         width: 70,
         height: 5,
         decoration: BoxDecoration(
-          color: AppColors.neutral[200],
+          color: AppColors.neutral[300],
           borderRadius: BorderRadius.circular(2.5),
-        ),
-      ),
-    );
-  }
-}
-
-/// A draggable widget that accepts vertical drag gestures.
-///
-/// This is typically only used in desktop or web platforms.
-class Grabber extends StatelessWidget {
-  const Grabber({super.key, required this.onVerticalDragUpdate});
-
-  final ValueChanged<DragUpdateDetails> onVerticalDragUpdate;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onVerticalDragUpdate: onVerticalDragUpdate,
-      child: Container(
-        width: 300,
-        color: colorScheme.onSurface,
-        child: Align(
-          alignment: .topCenter,
-          child: Container(
-            margin: const .symmetric(vertical: 8.0),
-            width: 32.0,
-            height: 4.0,
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              borderRadius: .circular(8.0),
-            ),
-          ),
         ),
       ),
     );
