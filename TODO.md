@@ -1,3 +1,7 @@
+## Show DraggableScrollableSheet when building is clicked
+
+- Open DraggableScrollableSheet when the map is clicked
+
 ## Add image processing to CreateVisualRoute
 
 - When user uploads an image, convert it to webp

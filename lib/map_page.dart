@@ -1,229 +1,50 @@
-import 'package:flutter/services.dart';
-import 'package:collection/collection.dart';
-import 'package:http/http.dart' as http;
-
 import 'package:flutter/material.dart';
-import 'package:maplibre/maplibre.dart';
-import 'package:usp_acessivel/app_colors.dart';
 
-import './utils.dart';
+import 'app_bottom_sheet.dart';
+import 'main_map.dart';
+import 'app_colors.dart';
 
-class MapPage extends StatelessWidget {
+class MapPage extends StatefulWidget {
   const MapPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: Scaffold(body: MyMap()));
-  }
+  State<MapPage> createState() => _MapPageState();
 }
 
-class MyMap extends StatefulWidget {
-  const MyMap({super.key});
-
-  @override
-  State<MyMap> createState() => _MyMapState();
-}
-
-class _MyMapState extends State<MyMap> {
-  late final MapController _controller;
-  late final Future<List<Feature<LineString>>> _waysFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _waysFuture = loadWays();
-  }
-
-  void _handleMapClick(MapEventClick event) async {
-    final features = _controller.featuresAtPoint(
-      event.screenPoint,
-      layerIds: ['ways', 'usp_buildings'],
-    );
-    print("Features clicked: $features");
-    if (features.isEmpty) {
-      await _controller.style?.updateGeoJsonSource(
-        id: 'selected-way',
-        data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
-      );
-      return;
-    }
-
-    final loadedWays = await _waysFuture;
-    final selectedWay = features.first;
-
-    final wayFeature = loadedWays.firstWhereOrNull((feat) {
-      return feat.properties["@id"] == selectedWay.properties["@id"];
-    });
-
-    final geometry = wayFeature?.geometry;
-
-    if (geometry != null) {
-      final bufferGeometry = bufferLineString(geometry, 0.00002);
-      final wayBuffer = Feature(geometry: bufferGeometry);
-
-      await _controller.style?.updateGeoJsonSource(
-        id: 'selected-way',
-        data: wayBuffer.toString(),
-      );
-    }
-  }
+class _MapPageState extends State<MapPage> {
+  // bool _showBottomSheet = true;
+  String? _selectedBuilding;
 
   @override
   Widget build(BuildContext context) {
-    return MapLibreMap(
-      options: MapOptions(
-        initStyle: "https://tiles.openfreemap.org/styles/liberty",
-        initCenter: initCenter,
-        initZoom: 17,
-        maxBounds: campusBounds,
+    return MaterialApp(
+      home: Scaffold(
+        body: Stack(
+          children: [
+            MainMap(
+              onSelect: (name) => setState(() {
+                _selectedBuilding = name;
+              }),
+            ),
+            if (_selectedBuilding != null)
+              AppBottomSheet(
+                onDismissed: () => setState(() => _selectedBuilding = null),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 300),
+                  child: Text(
+                    _selectedBuilding ?? '',
+                    textAlign: .center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppColors.primary[600],
+                      fontWeight: FontWeight(700),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
-      onMapCreated: (controller) => _controller = controller,
-      onEvent: (event) {
-        if (event is MapEventClick) {
-          _handleMapClick(event);
-        }
-      },
-      onStyleLoaded: _handleStyleLoaded,
     );
   }
-}
-
-// -- CONSTANTS --
-const LngLatBounds campusBounds = LngLatBounds(
-  longitudeWest: -46.745496,
-  longitudeEast: -46.710219,
-  latitudeSouth: -23.572641,
-  latitudeNorth: -23.549471,
-);
-
-const Geographic initCenter = Geographic(lon: -46.72746, lat: -23.5574559);
-
-// -- AUXILIARY FUNCTIONS --
-void _handleStyleLoaded(StyleController style) async {
-  // Remove layers
-  style.removeLayer('poi_r1');
-  style.removeLayer('poi_r7');
-  style.removeLayer('poi_r20');
-
-  // Load data
-  final waysStr = await rootBundle.loadString('data/ways.json');
-  final buildingsStr = await rootBundle.loadString(
-    'data/usp_buildings.geojson',
-  );
-  // --- Sources ---
-  await style.addSource(GeoJsonSource(id: 'ways', data: waysStr));
-  await style.addSource(GeoJsonSource(id: 'buildings', data: buildingsStr));
-  await style.addSource(
-    GeoJsonSource(
-      id: 'selected-way',
-      data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
-    ),
-  );
-  // --- Images/Icons ---
-  await style.addImageFromAssets(
-    id: 'concreto-escuro',
-    asset: 'assets/tiles/concreto-escuro.png',
-  );
-
-  await style.addImageFromIconData(
-    id: 'building-icon',
-    iconData: Icons.school,
-    color: AppColors.primary,
-    size: 24,
-  );
-  await style.addImageFromAssets(
-    id: 'school-icon',
-    asset: 'assets/map-icons/school-icon.png',
-  );
-  // --- Layers ---
-  // Ways layer
-  await style.addLayer(
-    const LineStyleLayer(
-      sourceId: 'ways',
-      id: 'ways',
-      layout: {'line-cap': 'round', 'line-join': 'round'},
-      paint: {'line-color': '#837F7F', 'line-width': 18.0, 'line-opacity': 0.8},
-      minZoom: 18,
-    ),
-  );
-
-  // Selected way buffer layer
-  await style.addLayer(
-    const FillStyleLayer(
-      sourceId: 'selected-way',
-      id: 'selected-way-fill',
-      paint: {'fill-color': '#FF4081', 'fill-pattern': 'concreto-escuro'},
-    ),
-  );
-
-  // Buildings layer - FIXED
-  await style.addLayer(
-    SymbolStyleLayer(
-      sourceId: 'buildings',
-      id: 'usp_buildings',
-      layout: {
-        'text-field': ['get', 'display_name'],
-        'text-font': ['Noto Sans Italic'],
-        'icon-image': 'school-icon', // ✅ FIXED: Use the icon we created
-        'icon-size': 0.5,
-        'text-size': 12,
-        'text-anchor': 'top',
-        'text-offset': [0, 1],
-        'text-max-width': 8,
-        'symbol-placement': 'point',
-        // 🛠️ EXTRA INSURANCE: Prevent collision engine from hiding symbols
-        'icon-allow-overlap': true,
-        'text-allow-overlap': true,
-        'icon-ignore-placement': true,
-        'text-ignore-placement': true,
-      },
-      paint: {
-        // ✅ ADDED: Paint properties were missing!
-        'text-color': '#666',
-        'text-halo-color': '#FFFFFF',
-        'text-halo-width': 1.5,
-      },
-      minZoom: 14, // ✅ FIXED: Lowered from 15 to ensure visibility
-    ),
-  );
-}
-
-Future<List<Feature<Point>>> loadBuildings() async {
-  final jsonString = await rootBundle.loadString('data/usp_buildings.geojson');
-  final collection = FeatureCollection.parse(
-    jsonString,
-    format: GeoJSON.feature,
-  );
-
-  final points = collection.features
-      .where((feat) => feat.geometry is Point)
-      .map(
-        (feat) => Feature<Point>(
-          geometry: feat.geometry as Point,
-          properties: feat.properties,
-        ),
-      )
-      .toList();
-
-  return points;
-}
-
-Future<List<Feature<LineString>>> loadWays() async {
-  final jsonString = await rootBundle.loadString('data/ways.json');
-  final collection = FeatureCollection.parse(
-    jsonString,
-    format: GeoJSON.feature,
-  );
-
-  final ways = collection.features
-      .where((feat) => feat.geometry is LineString)
-      .map(
-        (feat) => Feature<LineString>(
-          geometry: feat.geometry as LineString,
-          properties: feat.properties,
-        ),
-      )
-      .toList();
-
-  return ways;
 }
