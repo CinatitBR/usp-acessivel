@@ -1,17 +1,12 @@
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:maplibre/maplibre.dart';
+import 'package:usp_acessivel/app_colors.dart';
 
 import './utils.dart';
-
-// const LngLatBounds campusBounds = LngLatBounds(
-//   longitudeWest: -46.745496,
-//   longitudeEast: -46.710219,
-//   latitudeSouth: -23.572641,
-//   latitudeNorth: -23.549471,
-// );
 
 class MapPage extends StatelessWidget {
   const MapPage({super.key});
@@ -42,13 +37,10 @@ class _MyMapState extends State<MyMap> {
   void _handleMapClick(MapEventClick event) async {
     final features = _controller.featuresAtPoint(
       event.screenPoint,
-      layerIds: ['ways'],
+      layerIds: ['ways', 'usp_buildings'],
     );
-    // features contain the clicked features
     print("Features clicked: $features");
-
     if (features.isEmpty) {
-      // Clear 'selected-way' source
       await _controller.style?.updateGeoJsonSource(
         id: 'selected-way',
         data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
@@ -59,18 +51,14 @@ class _MyMapState extends State<MyMap> {
     final loadedWays = await _waysFuture;
     final selectedWay = features.first;
 
-    // Find matching feature from loaded snapshot
     final wayFeature = loadedWays.firstWhereOrNull((feat) {
       return feat.properties["@id"] == selectedWay.properties["@id"];
     });
 
-    // 2. Safely extract non-nullable LineString geometry
     final geometry = wayFeature?.geometry;
 
     if (geometry != null) {
-      // 0.0001 degrees ~= 11 meters
       final bufferGeometry = bufferLineString(geometry, 0.00002);
-      // Create buffer polygon
       final wayBuffer = Feature(geometry: bufferGeometry);
 
       await _controller.style?.updateGeoJsonSource(
@@ -90,34 +78,12 @@ class _MyMapState extends State<MyMap> {
         maxBounds: campusBounds,
       ),
       onMapCreated: (controller) => _controller = controller,
-      onEvent: (event) async {
+      onEvent: (event) {
         if (event is MapEventClick) {
           _handleMapClick(event);
         }
       },
       onStyleLoaded: _handleStyleLoaded,
-      children: [
-        WidgetLayer(
-          markers: [
-            Marker(
-              size: const Size.square(50),
-              point: initCenter,
-              child: Container(
-                width: 450,
-                height: 300,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(.circular(8)),
-                  image: DecorationImage(
-                    image: AssetImage("assets/rotas-odonto/exterior-1.webp"),
-                    fit: .cover,
-                    alignment: .centerStart,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
@@ -130,54 +96,58 @@ const LngLatBounds campusBounds = LngLatBounds(
   latitudeNorth: -23.549471,
 );
 
-// Initial center of the map. It's located around INOVA USP
 const Geographic initCenter = Geographic(lon: -46.72746, lat: -23.5574559);
 
 // -- AUXILIARY FUNCTIONS --
 void _handleStyleLoaded(StyleController style) async {
-  final buildingsStr = await rootBundle.loadString('data/buildings.json');
+  // Remove layers
+  style.removeLayer('poi_r1');
+  style.removeLayer('poi_r7');
+  style.removeLayer('poi_r20');
+
+  // Load data
   final waysStr = await rootBundle.loadString('data/ways.json');
-
-  // --- Sources and assets ---
-  await style.addSource(GeoJsonSource(id: 'buildings', data: buildingsStr));
+  final buildingsStr = await rootBundle.loadString(
+    'data/usp_buildings.geojson',
+  );
+  // --- Sources ---
   await style.addSource(GeoJsonSource(id: 'ways', data: waysStr));
-  await style.addImageFromAssets(
-    id: 'concreto-escuro',
-    asset: 'assets/tiles/concreto-escuro.png',
-  ); // Texture
-
-  // Create selected way source, initially empty.
-  // It has exactly one feature when the way is selected and shown.
+  await style.addSource(GeoJsonSource(id: 'buildings', data: buildingsStr));
   await style.addSource(
     GeoJsonSource(
       id: 'selected-way',
       data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
     ),
   );
-
-  await style.addImageFromIconData(
-    iconData: Icons.apartment,
-    id: 'building-icon',
-    size: 40,
+  // --- Images/Icons ---
+  await style.addImageFromAssets(
+    id: 'concreto-escuro',
+    asset: 'assets/tiles/concreto-escuro.png',
   );
 
+  await style.addImageFromIconData(
+    id: 'building-icon',
+    iconData: Icons.school,
+    color: AppColors.primary,
+    size: 24,
+  );
+  await style.addImageFromAssets(
+    id: 'school-icon',
+    asset: 'assets/map-icons/school-icon.png',
+  );
   // --- Layers ---
-
   // Ways layer
   await style.addLayer(
     const LineStyleLayer(
       sourceId: 'ways',
       id: 'ways',
-      layout: {
-        'line-cap': 'round', // Rounds the start and end tips of the lines
-        'line-join': 'round', // Rounds sharp corners where line segments meet
-      },
+      layout: {'line-cap': 'round', 'line-join': 'round'},
       paint: {'line-color': '#837F7F', 'line-width': 18.0, 'line-opacity': 0.8},
       minZoom: 18,
     ),
   );
 
-  // Selected way buffer layer (Fill layer for Polygons)
+  // Selected way buffer layer
   await style.addLayer(
     const FillStyleLayer(
       sourceId: 'selected-way',
@@ -186,37 +156,34 @@ void _handleStyleLoaded(StyleController style) async {
     ),
   );
 
-  // Buildings
+  // Buildings layer - FIXED
   await style.addLayer(
-    const SymbolStyleLayer(
+    SymbolStyleLayer(
       sourceId: 'buildings',
-      id: 'buildings',
+      id: 'usp_buildings',
       layout: {
-        'text-field': 'Inova-USP',
-        'icon-image': 'building-icon',
-        'text-size': 20,
+        'text-field': ['get', 'display_name'],
+        'icon-image': 'school-icon', // ✅ FIXED: Use the icon we created
+        'icon-size': 0.5,
+        'text-size': 12,
         'text-anchor': 'top',
         'text-offset': [0, 1],
+        'text-max-width': 8,
+        'symbol-placement': 'point',
       },
       paint: {
-        // --- Text styling ---
-        'text-color': '#FFFFFF', // Fill color (White)
-        'text-halo-color': '#808080', // Stroke/Outline color (Grey Hex code)
-        'text-halo-width': 2.0, // Stroke thickness in pixels
-        // --- Icon Styling (Requires SDF Icon) ---
-        'icon-color':
-            '#FFFFFF', // Change this to your desired Icon Fill Color (e.g., Red)
-        'icon-halo-color':
-            '#808080', // Change this to your desired Icon Stroke/Outline Color (e.g., Black)
-        'icon-halo-width': 1.5, // Icon Stroke thickness in pixels
+        // ✅ ADDED: Paint properties were missing!
+        'text-color': '#666',
+        'text-halo-color': '#FFFFFF',
+        'text-halo-width': 1.5,
       },
+      minZoom: 14, // ✅ FIXED: Lowered from 15 to ensure visibility
     ),
   );
 }
 
 Future<List<Feature<Point>>> loadBuildings() async {
-  final jsonString = await rootBundle.loadString('lib/data/buildings.json');
-  // final json = jsonDecode(jsonString) as Map<String, dynamic>;
+  final jsonString = await rootBundle.loadString('data/usp_buildings.geojson');
   final collection = FeatureCollection.parse(
     jsonString,
     format: GeoJSON.feature,
@@ -237,7 +204,6 @@ Future<List<Feature<Point>>> loadBuildings() async {
 
 Future<List<Feature<LineString>>> loadWays() async {
   final jsonString = await rootBundle.loadString('data/ways.json');
-  // final json = jsonDecode(jsonString) as Map<String, dynamic>;
   final collection = FeatureCollection.parse(
     jsonString,
     format: GeoJSON.feature,

@@ -1,0 +1,437 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7317,
+          -23.55921
+        ]
+      },
+      "properties": {
+        "id": "ime",
+        "name": "Instituto de Matemática, Estatística e Ciência da Computação (IME)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Instituto de Matemática, Estatística e..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73506,
+          -23.5599
+        ]
+      },
+      "properties": {
+        "id": "if",
+        "name": "Instituto de Física (IF)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Instituto de Física (IF)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72574,
+          -23.56509
+        ]
+      },
+      "properties": {
+        "id": "iq",
+        "name": "Instituto de Química (IQ)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Instituto de Química (IQ)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73021,
+          -23.55720580074401
+        ]
+      },
+      "properties": {
+        "id": "poli",
+        "name": "Escola Politécnica (EP / Poli)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Escola Politécnica (EP / Poli)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73383,
+          -23.55947
+        ]
+      },
+      "properties": {
+        "id": "iag",
+        "name": "Instituto de Astronomia, Geofísica e Ciências Atmosféricas (IAG)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Instituto de Astronomia, Geofísica e C..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72774,
+          -23.56178
+        ]
+      },
+      "properties": {
+        "id": "igc",
+        "name": "Instituto de Geociências (IGc)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Instituto de Geociências (IGc)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73332,
+          -23.5579
+        ]
+      },
+      "properties": {
+        "id": "iee",
+        "name": "Instituto de Energia e Ambiente (IEE)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Instituto de Energia e Ambiente (IEE)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73164,
+          -23.56818
+        ]
+      },
+      "properties": {
+        "id": "icb",
+        "name": "Instituto de Ciências Biomédicas (ICB)",
+        "category": "Exatas e Tecnologia",
+        "display_name": "Instituto de Ciências Biomédicas (ICB)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72922,
+          -23.5615
+        ]
+      },
+      "properties": {
+        "id": "fflch",
+        "name": "Faculdade de Filosofia, Letras e Ciências Humanas (FFLCH)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Faculdade de Filosofia, Letras e Ciênc..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72921,
+          -23.5591
+        ]
+      },
+      "properties": {
+        "id": "feausp",
+        "name": "Faculdade de Economia, Administração, Contabilidade e Atuária (FEA)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Faculdade de Economia, Administração, ..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7267,
+          -23.55801
+        ]
+      },
+      "properties": {
+        "id": "eca",
+        "name": "Escola de Comunicações e Artes (ECA)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Escola de Comunicações e Artes (ECA)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7299,
+          -23.56014
+        ]
+      },
+      "properties": {
+        "id": "fau",
+        "name": "Faculdade de Arquitetura e Urbanismo (FAU)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Faculdade de Arquitetura e Urbanismo (..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.71536,
+          -23.56249
+        ]
+      },
+      "properties": {
+        "id": "fe",
+        "name": "Faculdade de Educação (FE)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Faculdade de Educação (FE)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72244,
+          -23.56076
+        ]
+      },
+      "properties": {
+        "id": "iea",
+        "name": "Instituto de Estudos Avançados (IEA)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Instituto de Estudos Avançados (IEA)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72233,
+          -23.56222
+        ]
+      },
+      "properties": {
+        "id": "ieb",
+        "name": "Instituto de Estudos Brasileiros (IEB)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Instituto de Estudos Brasileiros (IEB)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72896,
+          -23.5562
+        ]
+      },
+      "properties": {
+        "id": "iri",
+        "name": "Instituto de Relações Internacionais (IRI)",
+        "category": "Humanas, Sociais Aplicadas e Artes",
+        "display_name": "Instituto de Relações Internacionais (..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73036,
+          -23.56601
+        ]
+      },
+      "properties": {
+        "id": "ib",
+        "name": "Instituto de Biociências (IB)",
+        "category": "Biológicas, Saúde e Agrárias",
+        "display_name": "Instituto de Biociências (IB)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72439,
+          -23.56414
+        ]
+      },
+      "properties": {
+        "id": "fcf",
+        "name": "Faculdade de Ciências Farmacêuticas (FCF)",
+        "category": "Biológicas, Saúde e Agrárias",
+        "display_name": "Faculdade de Ciências Farmacêuticas (F..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73824,
+          -23.56677
+        ]
+      },
+      "properties": {
+        "id": "fousp",
+        "name": "Faculdade de Odontologia (FO)",
+        "category": "Biológicas, Saúde e Agrárias",
+        "display_name": "Faculdade de Odontologia (FO)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7391,
+          -23.56967
+        ]
+      },
+      "properties": {
+        "id": "fmvz",
+        "name": "Faculdade de Medicina Veterinária e Zootecnia (FMVZ)",
+        "category": "Biológicas, Saúde e Agrárias",
+        "display_name": "Faculdade de Medicina Veterinária e Zo..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7132,
+          -23.56321
+        ]
+      },
+      "properties": {
+        "id": "eefe",
+        "name": "Escola de Educação Física e Esporte (EEFE)",
+        "category": "Biológicas, Saúde e Agrárias",
+        "display_name": "Escola de Educação Física e Esporte (E..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72474,
+          -23.5555
+        ]
+      },
+      "properties": {
+        "id": "ip",
+        "name": "Instituto de Psicologia (IP)",
+        "category": "Biológicas, Saúde e Agrárias",
+        "display_name": "Instituto de Psicologia (IP)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73202,
+          -23.56097
+        ]
+      },
+      "properties": {
+        "id": "io",
+        "name": "Instituto Oceanográfico (IO)",
+        "category": "Biológicas, Saúde e Agrárias",
+        "display_name": "Instituto Oceanográfico (IO)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72583,
+          -23.55891
+        ]
+      },
+      "properties": {
+        "id": "reitoria",
+        "name": "Reitoria da Universidade de São Paulo",
+        "category": "Órgãos Centrais & Inovação",
+        "display_name": "Reitoria da Universidade de São Paulo"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72733,
+          -23.55764
+        ]
+      },
+      "properties": {
+        "id": "inova-usp",
+        "name": "Inova USP",
+        "category": "Órgãos Centrais & Inovação",
+        "display_name": "Inova USP"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.71731,
+          -23.56142
+        ]
+      },
+      "properties": {
+        "id": "cepeusp",
+        "name": "Centro de Práticas Esportivas (CEPEUSP)",
+        "category": "Órgãos Centrais & Inovação",
+        "display_name": "Centro de Práticas Esportivas (CEPEUSP..."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72143,
+          -23.5589
+        ]
+      },
+      "properties": {
+        "id": "sas",
+        "name": "Divisão de Promoção Social e Esporte da PRIP/USP",
+        "category": "Órgãos Centrais & Inovação",
+        "display_name": "Divisão de Promoção Social e Esporte d..."
+      }
+    }
+  ]
+}

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 // Pages
-import 'route_page.dart';
 import 'map_page.dart';
 import 'institutes_page.dart';
 import 'create_visual_route_page.dart';
