@@ -17,34 +17,30 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Stack(
-          children: [
-            MainMap(
-              onSelect: (name) => setState(() {
-                _selectedBuilding = name;
-              }),
-            ),
-            if (_selectedBuilding != null)
-              AppBottomSheet(
-                onDismissed: () => setState(() => _selectedBuilding = null),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 300),
-                  child: Text(
-                    _selectedBuilding ?? '',
-                    textAlign: .center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.primary[600],
-                      fontWeight: FontWeight(700),
-                    ),
-                  ),
+    return Stack(
+      children: [
+        MainMap(
+          onSelect: (name) => setState(() {
+            _selectedBuilding = name;
+          }),
+        ),
+        if (_selectedBuilding != null)
+          AppBottomSheet(
+            onDismissed: () => setState(() => _selectedBuilding = null),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 300),
+              child: Text(
+                _selectedBuilding ?? '',
+                textAlign: .center,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppColors.primary[600],
+                  fontWeight: FontWeight(700),
                 ),
               ),
-          ],
-        ),
-      ),
+            ),
+          ),
+      ],
     );
   }
 }

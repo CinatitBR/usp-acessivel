@@ -6,14 +6,14 @@ class AppBottomSheet extends StatelessWidget {
   const AppBottomSheet({
     super.key,
     required this.child,
-    this.maxChildSize = 0.95,
+    this.maxChildSize = 0.98,
     this.minChildSize = 0.15,
     this.onDismissed,
   });
 
   final Widget child;
-  final double minChildSize;
   final double maxChildSize;
+  final double minChildSize;
   final VoidCallback? onDismissed;
 
   @override
@@ -27,11 +27,11 @@ class AppBottomSheet extends StatelessWidget {
           return false;
         },
         child: DraggableScrollableSheet(
-          initialChildSize: minChildSize,
-          minChildSize: 0.0,
+          initialChildSize: maxChildSize,
           maxChildSize: maxChildSize,
+          minChildSize: minChildSize,
           snap: true,
-          snapSizes: [minChildSize],
+          snapSizes: [0.5],
           builder: (BuildContext context, ScrollController scrollController) {
             return Container(
               decoration: BoxDecoration(

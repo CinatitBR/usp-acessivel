@@ -164,7 +164,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 shrinkWrap: true, // Crucial inside SingleChildScrollView
                 physics:
                     const NeverScrollableScrollPhysics(), // Allows page to scroll smoothly together
-                onReorder: (int oldIndex, int newIndex) {
+                onReorderItem: (int oldIndex, int newIndex) {
                   if (oldIndex < newIndex) {
                     newIndex -= 1;
                   }

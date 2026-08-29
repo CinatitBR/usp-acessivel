@@ -1,11 +1,8 @@
-## Show DraggableScrollableSheet when building is clicked
+## Create Visual Route: send data to backend
 
-- Open DraggableScrollableSheet when the map is clicked
-
-## Add image processing to CreateVisualRoute
-
-- When user uploads an image, convert it to webp
-- Quality: 0.8 | Max width: 700px | Max height: 700px
+- Add buildings: id and name to the dropdown.
+- Make required: title, building.
+- Save form data in the appropriate format (following the endpoint multipart/form-data)
 
 ## Add server data to screen
 

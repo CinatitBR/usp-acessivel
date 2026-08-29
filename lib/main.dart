@@ -109,7 +109,9 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       // 3. IndexedStack keeps all tab states alive in memory
       // without destroying/rebuilding them when you switch tabs
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: SafeArea(
+        child: IndexedStack(index: _currentIndex, children: _pages),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
