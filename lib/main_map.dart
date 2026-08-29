@@ -37,14 +37,16 @@ class _MainMapState extends State<MainMap> {
       event.screenPoint,
       layerIds: ['usp_buildings'],
     );
-    final buildingClicked = featuresBuildings.first;
-    print('FEATURE BUILDING CLICKED: $buildingClicked');
-    // SELECT THE FEATURE
-    final buildingName = buildingClicked.properties['name'];
-    print('=== NAME: $buildingName ===');
-    if (buildingName is String) {
-      // print('É STRING');
-      widget.onSelect(buildingName);
+    if (featuresBuildings.isNotEmpty) {
+      final buildingClicked = featuresBuildings.first;
+      print('FEATURE BUILDING CLICKED: $buildingClicked');
+      // SELECT THE FEATURE
+      final buildingName = buildingClicked.properties['name'];
+      print('=== NAME: $buildingName ===');
+      if (buildingName is String) {
+        // print('É STRING');
+        widget.onSelect(buildingName);
+      }
     }
 
     if (features.isEmpty) {
