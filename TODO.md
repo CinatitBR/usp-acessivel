@@ -1,3 +1,8 @@
+## Add image processing to CreateVisualRoute
+
+- When user uploads an image, convert it to webp
+- Quality: 0.8 | Max width: 700px | Max height: 700px
+
 ## Add server data to screen
 
 - Fetch buildings from the server

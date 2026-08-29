@@ -163,6 +163,7 @@ void _handleStyleLoaded(StyleController style) async {
       id: 'usp_buildings',
       layout: {
         'text-field': ['get', 'display_name'],
+        'text-font': ['Noto Sans Italic'],
         'icon-image': 'school-icon', // ✅ FIXED: Use the icon we created
         'icon-size': 0.5,
         'text-size': 12,
@@ -170,6 +171,11 @@ void _handleStyleLoaded(StyleController style) async {
         'text-offset': [0, 1],
         'text-max-width': 8,
         'symbol-placement': 'point',
+        // 🛠️ EXTRA INSURANCE: Prevent collision engine from hiding symbols
+        'icon-allow-overlap': true,
+        'text-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'text-ignore-placement': true,
       },
       paint: {
         // ✅ ADDED: Paint properties were missing!
