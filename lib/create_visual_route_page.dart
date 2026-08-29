@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_colors.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class RouteStep {
   final String id; // Changed from 'int order' to a unique string ID
@@ -31,6 +34,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   String _selectedLocation = 'Apple';
   final List<RouteStep> _steps = [];
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -134,14 +138,25 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
               ),
               Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
               FilledButton(
-                onPressed: _pickImagesAndAddStep,
+                onPressed: _isLoading ? null : _pickImagesAndAddStep,
                 style: FilledButton.styleFrom(minimumSize: Size(200, 48)),
                 child: Row(
                   mainAxisAlignment: .center,
                   spacing: 16,
                   children: [
-                    Icon(Icons.camera_alt_outlined),
-                    const Text('Adicionar fotos'),
+                    if (_isLoading)
+                      const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    else ...[
+                      Icon(Icons.camera_alt_outlined),
+                      const Text('Adicionar fotos'),
+                    ],
                   ],
                 ),
               ),
@@ -149,7 +164,10 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 shrinkWrap: true, // Crucial inside SingleChildScrollView
                 physics:
                     const NeverScrollableScrollPhysics(), // Allows page to scroll smoothly together
-                onReorderItem: (int oldIndex, int newIndex) {
+                onReorder: (int oldIndex, int newIndex) {
+                  if (oldIndex < newIndex) {
+                    newIndex -= 1;
+                  }
                   _reorderStep(oldIndex, newIndex);
                 },
                 children: List.generate(_steps.length, (index) {
@@ -231,18 +249,78 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   }
 
   Future<void> _pickImagesAndAddStep() async {
-    // final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     final List<XFile> images = await _picker.pickMultiImage();
+    if (images.isEmpty) return;
+
+    // Validate extensions
+    final validExtensions = ['.png', '.jpg', '.jpeg', '.heic', '.heif'];
+    bool hasInvalid = false;
     for (var image in images) {
-      setState(() {
-        _steps.add(
-          RouteStep(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            image: image,
-            descriptionController: TextEditingController(),
-          ),
+      final ext = p.extension(image.path).toLowerCase();
+      if (!validExtensions.contains(ext)) {
+        hasInvalid = true;
+        break;
+      }
+    }
+
+    if (hasInvalid) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Um ou mais arquivos não são válidos.')),
         );
-      });
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final tempDir = await getTemporaryDirectory();
+
+      for (var image in images) {
+        final timestamp = DateTime.now().microsecondsSinceEpoch;
+        final targetPath = p.join(tempDir.path, 'converted_$timestamp.webp');
+
+        final XFile? convertedImage =
+            await FlutterImageCompress.compressAndGetFile(
+              image.path,
+              targetPath,
+              quality: 80,
+              minWidth: 700,
+              format: CompressFormat.webp,
+            );
+
+        if (convertedImage != null) {
+          setState(() {
+            _steps.add(
+              RouteStep(
+                id: timestamp.toString(),
+                image: convertedImage,
+                descriptionController: TextEditingController(),
+              ),
+            );
+          });
+        } else {
+          // Fallback just in case conversion fails, but it shouldn't
+          setState(() {
+            _steps.add(
+              RouteStep(
+                id: timestamp.toString(),
+                image: image,
+                descriptionController: TextEditingController(),
+              ),
+            );
+          });
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
