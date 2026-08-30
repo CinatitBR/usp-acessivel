@@ -1,5 +1,8 @@
 ## Create Visual Route: send data to backend
 
+- Fix 404 bug: fixed, I had forgotten to "npx wrangler deploy"
+- On route save: disable button, show loading screen.
+
 - Add buildings: id and name to the dropdown.
 - Make required: title, building.
 - Save form data in the appropriate format (following the endpoint multipart/form-data)

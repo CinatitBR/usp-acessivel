@@ -41,7 +41,8 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   List<DropdownMenuEntry<String>> _buildingEntries = [];
   final List<RouteStep> _steps = [];
   final ImagePicker _picker = ImagePicker();
-  bool _isLoading = false;
+  bool _isLoading = false; // Flag for image processing
+  bool _isSaving = false; // Dedicated flag for POST upload
   int _processedFiles = 0;
 
   @override
@@ -259,7 +260,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 mainAxisAlignment: .spaceEvenly,
                 children: [
                   FilledButton(
-                    onPressed: _onCancel,
+                    onPressed: _isSaving ? null : _onCancel,
                     style: FilledButton.styleFrom(
                       // fixedSize: Size(180, 48),
                       padding: .symmetric(horizontal: 16),
@@ -271,7 +272,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                     ),
                   ),
                   FilledButton(
-                    onPressed: _onSave,
+                    onPressed: _isSaving ? null : _onSave,
                     style: FilledButton.styleFrom(
                       padding: .symmetric(horizontal: 40),
                     ),
@@ -432,7 +433,41 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
 
     setState(() {
       _isLoading = true;
+      _isSaving = true;
     });
+
+    // Shows dialog and block user screen while POST is being made
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents closing by tapping outside
+      builder: (dialogContext) {
+        return const PopScope(
+          canPop:
+              false, // Prevents closing with the Android back button / gestures
+          child: Center(
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(width: 20),
+                    Text(
+                      'Salvando rota...',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
 
     try {
       final List<Map<String, dynamic>> stepsMetaList = _steps
@@ -472,10 +507,24 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
 
       final response = await dio.post(endpoint, data: formData);
 
+      setState(() => _isSaving = false);
+      // Dismiss the loading dialog before triggering snackbars or navigation
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Rota salva com sucesso!')),
+            SnackBar(
+              content: Text(
+                'Rota salva com sucesso!',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: Colors.white),
+              ),
+              backgroundColor: Colors.green,
+            ),
           );
           _onCancel();
         }
@@ -489,6 +538,12 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
         }
       }
     } catch (e) {
+      setState(() => _isSaving = false);
+      // Dismiss dialog if error occurs during upload
+      if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(
           context,
