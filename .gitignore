@@ -11,6 +11,7 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+.env
 
 # IntelliJ related
 *.iml
@@ -49,3 +50,6 @@ lib/firebase_options.dart
 
 # Local util files
 connect_wifi.sh
+
+# Local development environment variables. Developer should create their own .env.development file.
+.env.development
