@@ -42,6 +42,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   final List<RouteStep> _steps = [];
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+  int _processedFiles = 0;
 
   @override
   void initState() {
@@ -216,19 +217,24 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
               Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
               FilledButton(
                 onPressed: _isLoading ? null : _pickImagesAndAddStep,
-                style: FilledButton.styleFrom(minimumSize: Size(200, 48)),
+                style: FilledButton.styleFrom(
+                  minimumSize: Size(200, 48),
+                  padding: .symmetric(vertical: 16),
+                ),
                 child: Row(
                   mainAxisAlignment: .center,
                   spacing: 16,
                   children: [
                     if (_isLoading)
-                      const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                      Column(
+                        spacing: 8,
+                        children: [
+                          Text('$_processedFiles arquivos processados'),
+                          CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ],
                       )
                     else ...[
                       Icon(Icons.add_a_photo),
@@ -249,21 +255,29 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 }),
               ),
 
-              FilledButton(
-                onPressed: _onCancel,
-                style: FilledButton.styleFrom(
-                  fixedSize: Size(180, 48),
-                  backgroundColor: AppColors.neutral[200],
-                ),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(color: AppColors.neutral[700]),
-                ),
-              ),
-              FilledButton(
-                onPressed: _onSave,
-                style: FilledButton.styleFrom(fixedSize: Size(180, 48)),
-                child: const Text('Salvar rota'),
+              Row(
+                mainAxisAlignment: .spaceEvenly,
+                children: [
+                  FilledButton(
+                    onPressed: _onCancel,
+                    style: FilledButton.styleFrom(
+                      // fixedSize: Size(180, 48),
+                      padding: .symmetric(horizontal: 16),
+                      backgroundColor: AppColors.neutral[200],
+                    ),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(color: AppColors.neutral[700]),
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: _onSave,
+                    style: FilledButton.styleFrom(
+                      padding: .symmetric(horizontal: 40),
+                    ),
+                    child: const Text('Salvar rota'),
+                  ),
+                ],
               ),
             ],
           ),
@@ -358,6 +372,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
               format: CompressFormat.webp,
             );
 
+        // Image was processed and added to the list
         newSteps.add(
           RouteStep(
             id: timestamp.toString(),
@@ -365,6 +380,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
             descriptionController: TextEditingController(),
           ),
         );
+        setState(() => _processedFiles += 1);
       }
       if (mounted) {
         setState(() {
@@ -396,6 +412,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       _descriptionController.clear();
       _locationController.text = '';
       _selectedBuildingId = null;
+      _processedFiles = 0;
       for (var step in _steps) {
         step.descriptionController.dispose();
       }
@@ -406,7 +423,9 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   Future<void> _onSave() async {
     if (_titleController.text.isEmpty || _selectedBuildingId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, preencha o título e o edifício.')),
+        const SnackBar(
+          content: Text('Por favor, preencha o título e o edifício.'),
+        ),
       );
       return;
     }
@@ -416,14 +435,18 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     });
 
     try {
-      final List<Map<String, dynamic>> stepsMetaList = _steps.asMap().entries.map((entry) {
-        final int index = entry.key;
-        final RouteStep step = entry.value;
-        return {
-          'step_order': index,
-          'description': step.descriptionController.text,
-        };
-      }).toList();
+      final List<Map<String, dynamic>> stepsMetaList = _steps
+          .asMap()
+          .entries
+          .map((entry) {
+            final int index = entry.key;
+            final RouteStep step = entry.value;
+            return {
+              'step_order': index,
+              'description': step.descriptionController.text,
+            };
+          })
+          .toList();
 
       final String stepsMetaJson = jsonEncode(stepsMetaList);
 
@@ -431,7 +454,9 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       for (var step in _steps) {
         final String filePath = step.image.path;
         final String fileName = p.basename(filePath);
-        imageFiles.add(await MultipartFile.fromFile(filePath, filename: fileName));
+        imageFiles.add(
+          await MultipartFile.fromFile(filePath, filename: fileName),
+        );
       }
 
       final formData = FormData.fromMap({
@@ -442,8 +467,8 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       });
 
       final dio = Dio();
-      final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8787/';
-      final String endpoint = '${baseUrl}visualRoutes';
+      final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8787';
+      final String endpoint = '$baseUrl/visualRoutes';
 
       final response = await dio.post(endpoint, data: formData);
 
@@ -457,15 +482,17 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao salvar rota: ${response.statusCode}')),
+            SnackBar(
+              content: Text('Erro ao salvar rota: ${response.statusCode}'),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar rota: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao salvar rota: $e')));
       }
     } finally {
       if (mounted) {
