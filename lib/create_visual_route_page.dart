@@ -7,6 +7,8 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
+import 'building_repository.dart';
+
 class RouteStep {
   final String id; // Changed from 'int order' to a unique string ID
   // final int order;
@@ -31,7 +33,9 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
-  String _selectedLocation = 'Apple';
+
+  String? _selectedBuildingId;
+  List<DropdownMenuEntry<String>> _buildingEntries = [];
   final List<RouteStep> _steps = [];
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
@@ -39,7 +43,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   @override
   void initState() {
     super.initState();
-    _locationController.text = _selectedLocation;
+    _loadData();
   }
 
   @override
@@ -51,6 +55,24 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       step.descriptionController.dispose();
     }
     super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    // 1. Instant check if already loaded
+    if (BuildingRepository.instance.cachedEntries.isNotEmpty) {
+      setState(() {
+        _buildingEntries = BuildingRepository.instance.cachedEntries;
+      });
+      return;
+    }
+
+    // 2. Fallback to async retrieval if not yet loaded
+    final entries = await BuildingRepository.instance.getBuildingEntries();
+    if (mounted) {
+      setState(() {
+        _buildingEntries = entries;
+      });
+    }
   }
 
   void _reorderStep(int oldIndex, int newIndex) {
@@ -65,10 +87,13 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.primary[700]),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Row(
           mainAxisAlignment: .spaceEvenly,
           children: [
-            Icon(Icons.arrow_back, color: AppColors.primary[700]),
             Text(
               "Criar Rota Visual",
               style: Theme.of(
@@ -112,23 +137,72 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
               ),
               _buildFieldTitle(context, 'Edifício ou instituto'),
               DropdownMenu(
+                expandedInsets: EdgeInsets.zero,
                 controller: _locationController,
                 label: const Text('Selecione o local'),
-                initialSelection: _selectedLocation,
+                initialSelection: _selectedBuildingId,
                 onSelected: (String? value) {
                   if (value != null) {
                     setState(() {
-                      _selectedLocation = value;
-                      _locationController.text = value;
+                      _selectedBuildingId = value;
                     });
                   }
                 },
                 textStyle: const TextStyle(color: Color(0xFF1A1C1C)),
-                dropdownMenuEntries: const [
-                  DropdownMenuEntry(value: 'Apple', label: 'Apple'),
-                  DropdownMenuEntry(value: 'Banana', label: 'Banana'),
-                  DropdownMenuEntry(value: 'Cherry', label: 'Cherry'),
-                ],
+                dropdownMenuEntries: _buildingEntries,
+                menuHeight: 340,
+
+                // Enables real-time typing and filtering of the entries
+                enableFilter: true,
+                enableSearch: true,
+                requestFocusOnTap:
+                    true, // Opens keyboard immediately when tapped
+                // Custom search callback to ignore case and match partial text / acronyms
+                filterCallback:
+                    (List<DropdownMenuEntry<String>> entries, String filter) {
+                      final trimmedFilter = filter.trim().toLowerCase();
+                      if (trimmedFilter.isEmpty) {
+                        return entries;
+                      }
+
+                      return entries.where((entry) {
+                        final labelMatches = entry.label.toLowerCase().contains(
+                          trimmedFilter,
+                        );
+                        final valueMatches = entry.value.toLowerCase().contains(
+                          trimmedFilter,
+                        );
+                        return labelMatches || valueMatches;
+                      }).toList();
+                    },
+
+                menuStyle: MenuStyle(
+                  padding: WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  ),
+                  shape: WidgetStatePropertyAll(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16)),
+                    ),
+                  ),
+                  elevation: const WidgetStatePropertyAll(4),
+                  backgroundColor: const WidgetStatePropertyAll(Colors.white),
+                ),
+                inputDecorationTheme: InputDecorationTheme(
+                  filled: true,
+                  fillColor: AppColors.neutral[100],
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.neutral[200]!),
+                    borderRadius: const BorderRadius.all(Radius.circular(24)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: AppColors.neutral[700]!,
+                      width: 2.0,
+                    ),
+                    borderRadius: const BorderRadius.all(Radius.circular(24)),
+                  ),
+                ),
               ),
               _buildFieldTitle(context, 'Sobre esta rota'),
               _buildTextField(
@@ -154,30 +228,18 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                         ),
                       )
                     else ...[
-                      Icon(Icons.camera_alt_outlined),
+                      Icon(Icons.add_a_photo),
                       const Text('Adicionar fotos'),
                     ],
                   ],
                 ),
               ),
-              ReorderableListView(
-                shrinkWrap: true, // Crucial inside SingleChildScrollView
-                physics:
-                    const NeverScrollableScrollPhysics(), // Allows page to scroll smoothly together
-                onReorderItem: (int oldIndex, int newIndex) {
-                  if (oldIndex < newIndex) {
-                    newIndex -= 1;
-                  }
-                  _reorderStep(oldIndex, newIndex);
-                },
+              Column(
                 children: List.generate(_steps.length, (index) {
                   final step = _steps[index];
-
                   return _buildStepBox(
                     context,
-                    key: ValueKey(
-                      step.id,
-                    ), // Tracks the unique ID string instead of a volatile integer index
+                    key: ValueKey(step.id),
                     step: step,
                     stepIndex: index,
                   );
@@ -278,6 +340,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
 
     try {
       final tempDir = await getTemporaryDirectory();
+      final List<RouteStep> newSteps = [];
 
       for (var image in images) {
         final timestamp = DateTime.now().microsecondsSinceEpoch;
@@ -292,30 +355,23 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
               format: CompressFormat.webp,
             );
 
-        if (convertedImage != null) {
-          setState(() {
-            _steps.add(
-              RouteStep(
-                id: timestamp.toString(),
-                image: convertedImage,
-                descriptionController: TextEditingController(),
-              ),
-            );
-          });
-        } else {
-          // Fallback just in case conversion fails, but it shouldn't
-          setState(() {
-            _steps.add(
-              RouteStep(
-                id: timestamp.toString(),
-                image: image,
-                descriptionController: TextEditingController(),
-              ),
-            );
-          });
-        }
+        newSteps.add(
+          RouteStep(
+            id: timestamp.toString(),
+            image: convertedImage ?? image,
+            descriptionController: TextEditingController(),
+          ),
+        );
       }
-    } finally {
+      if (mounted) {
+        setState(() {
+          _steps.addAll(newSteps); // Single rebuild for all added images
+        });
+      }
+    }
+    // Fallback just in case conversion fails, but it shouldn't
+    // catch () {}
+    finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -335,8 +391,8 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     setState(() {
       _titleController.clear();
       _descriptionController.clear();
-      _selectedLocation = 'Apple';
-      _locationController.text = 'Apple';
+      _locationController.text = '';
+      _selectedBuildingId = null;
       for (var step in _steps) {
         step.descriptionController.dispose();
       }
@@ -347,16 +403,19 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   void _onSave() {
     final Map<String, dynamic> routeData = {
       'title': _titleController.text,
-      'location': _selectedLocation,
+      'buildingId': _selectedBuildingId,
       'description': _descriptionController.text,
-      'steps': _steps
-          .map(
-            (step) => {
-              'imagePath': step.image.path,
-              'description': step.descriptionController.text,
-            },
-          )
-          .toList(),
+      'stepsMeta': _steps.asMap().entries.map((entry) {
+        final int index = entry.key;
+        final RouteStep step = entry.value;
+
+        return {
+          'imagePath': step.image.path,
+          'step_order': index, // or just `index` if you want 0-based
+          'description': step.descriptionController.text,
+        };
+      }).toList(),
+      // Should have multiple fields with name "image", that contain the image files
     };
 
     // In a real app this might post to a server, but for now we print to log
@@ -399,13 +458,6 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 Column(
                   spacing: 12,
                   children: [
-                    // VISUAL CLUE: The Drag Handle Icon
-                    Icon(
-                      Icons.drag_indicator, // Or Icons.drag_handle
-                      color:
-                          AppColors.neutral[400], // Use a subtle, muted color
-                      size: 24,
-                    ),
                     CircleAvatar(
                       radius: 16,
                       backgroundColor: AppColors.primary,

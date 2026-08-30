@@ -3,12 +3,19 @@ import 'package:flutter/material.dart';
 // Colors
 import 'app_colors.dart';
 
+import 'building_repository.dart';
+
 // Pages
 import 'map_page.dart';
 import 'institutes_page.dart';
-import 'create_visual_route_page.dart';
 
 void main() {
+  // Needed in order to call getBuildingEntries() before runApp().
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Parse the GeoJSON file of buildings in the background, and cache in memory
+  BuildingRepository.instance.getBuildingEntries();
+
   runApp(const MainApp());
 }
 
@@ -98,11 +105,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   // 2. Ordered list of pages matching the bottom taskbar indexes
-  final List<Widget> _pages = [
-    MapPage(),
-    InstitutesPage(),
-    CreateVisualRoutePage(),
-  ];
+  final List<Widget> _pages = [MapPage(), InstitutesPage()];
 
   @override
   Widget build(BuildContext context) {
@@ -125,10 +128,6 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             label: 'Institutos',
             icon: Icon(Icons.school),
-          ),
-          BottomNavigationBarItem(
-            label: 'Rota visual',
-            icon: Icon(Icons.remove_red_eye),
           ),
         ],
       ),
