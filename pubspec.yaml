@@ -8,9 +8,11 @@ environment:
 
 dependencies:
   collection: ^1.19.1
+  dio: ^5.11.0
   firebase_core: ^4.13.0
   flutter:
     sdk: flutter
+  flutter_dotenv: ^6.0.1
   flutter_image_compress: ^2.5.1
   image_picker: ^1.2.3
   maplibre: ^0.3.5
@@ -32,3 +34,5 @@ flutter:
     - assets/tiles/
     - assets/rotas-odonto/
     - assets/map-icons/
+    - .env.development
+    - .env.production

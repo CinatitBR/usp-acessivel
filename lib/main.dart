@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Colors
 import 'app_colors.dart';
@@ -9,9 +11,16 @@ import 'building_repository.dart';
 import 'map_page.dart';
 import 'institutes_page.dart';
 
-void main() {
+void main() async {
   // Needed in order to call getBuildingEntries() before runApp().
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables depending on debug/release mode.
+  if (kReleaseMode) {
+    await dotenv.load(fileName: ".env.production");
+  } else {
+    await dotenv.load(fileName: ".env.development");
+  }
 
   // Parse the GeoJSON file of buildings in the background, and cache in memory
   BuildingRepository.instance.getBuildingEntries();

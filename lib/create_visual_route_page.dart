@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_colors.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -400,36 +403,77 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     });
   }
 
-  void _onSave() {
-    final Map<String, dynamic> routeData = {
-      'title': _titleController.text,
-      'buildingId': _selectedBuildingId,
-      'description': _descriptionController.text,
-      'stepsMeta': _steps.asMap().entries.map((entry) {
-        final int index = entry.key;
-        final RouteStep step = entry.value;
-
-        return {
-          'imagePath': step.image.path,
-          'step_order': index, // or just `index` if you want 0-based
-          'description': step.descriptionController.text,
-        };
-      }).toList(),
-      // Should have multiple fields with name "image", that contain the image files
-    };
-
-    // In a real app this might post to a server, but for now we print to log
-    if (kDebugMode) {
-      print('==============================');
-      print('ROUTE SAVED IN MEMORY:');
-      print(routeData);
-      print('==============================');
+  Future<void> _onSave() async {
+    if (_titleController.text.isEmpty || _selectedBuildingId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, preencha o título e o edifício.')),
+      );
+      return;
     }
 
-    // Optionally clear form or show success message
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Rota salva com sucesso!')));
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final List<Map<String, dynamic>> stepsMetaList = _steps.asMap().entries.map((entry) {
+        final int index = entry.key;
+        final RouteStep step = entry.value;
+        return {
+          'step_order': index,
+          'description': step.descriptionController.text,
+        };
+      }).toList();
+
+      final String stepsMetaJson = jsonEncode(stepsMetaList);
+
+      final List<MultipartFile> imageFiles = [];
+      for (var step in _steps) {
+        final String filePath = step.image.path;
+        final String fileName = p.basename(filePath);
+        imageFiles.add(await MultipartFile.fromFile(filePath, filename: fileName));
+      }
+
+      final formData = FormData.fromMap({
+        'title': _titleController.text,
+        'buildingId': _selectedBuildingId,
+        'stepsMeta': stepsMetaJson,
+        'images': imageFiles,
+      });
+
+      final dio = Dio();
+      final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8787/';
+      final String endpoint = '${baseUrl}visualRoutes';
+
+      final response = await dio.post(endpoint, data: formData);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Rota salva com sucesso!')),
+          );
+          _onCancel();
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao salvar rota: ${response.statusCode}')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao salvar rota: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Widget _buildStepBox(
