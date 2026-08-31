@@ -15,7 +15,7 @@ dependencies:
   flutter_dotenv: ^6.0.1
   flutter_image_compress: ^2.5.1
   image_picker: ^1.2.3
-  maplibre: ^0.3.5
+  maplibre_gl: ^0.27.0
   path: ^1.9.1
   path_provider: ^2.1.6
 

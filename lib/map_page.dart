@@ -59,11 +59,12 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        MainMap(
-          onSelect: (name) => setState(() {
-            _selectedBuilding = name;
-          }),
-        ),
+        // MainMap(
+        //   onSelect: (name) => setState(() {
+        //     _selectedBuilding = name;
+        //   }),
+        // ),
+        MainMap(),
         Positioned(
           right: 24,
           bottom: 24,
