@@ -1,3 +1,15 @@
+// ADD THIS BLOCK AT THE VERY TOP
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // This makes the Kotlin configuration block available to old subproject build files
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
+    }
+}
+
 allprojects {
     repositories {
         google()
