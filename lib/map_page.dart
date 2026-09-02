@@ -6,6 +6,9 @@ import 'app_colors.dart';
 
 import 'app_bottom_sheet.dart';
 import 'main_map.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dynamic_visual_route_page.dart';
 import 'create_visual_route_page.dart';
 
 class MapPage extends StatefulWidget {
@@ -17,6 +20,9 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   String? _selectedBuilding;
+  bool _showVisualRoutes = false;
+  bool _isLoadingRoutes = false;
+  List<dynamic> _visualRoutesList = [];
   Geographic? _targetCenter;
   List<Building> _buildingEntries = [];
 
@@ -32,6 +38,38 @@ class _MapPageState extends State<MapPage> {
       setState(() {
         _buildingEntries = entries;
       });
+    }
+  }
+
+  Future<void> _fetchVisualRoutes() async {
+    setState(() {
+      _isLoadingRoutes = true;
+      _visualRoutesList = [];
+    });
+
+    try {
+      final dio = Dio();
+      final baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8787';
+      final response = await dio.get(
+        '$baseUrl/visualRoutes',
+        queryParameters: {'page': 1},
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        if (mounted) {
+          setState(() {
+            _visualRoutesList = response.data['data'] ?? [];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching visual routes: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingRoutes = false;
+        });
+      }
     }
   }
 
@@ -160,7 +198,11 @@ class _MapPageState extends State<MapPage> {
                   children: [
                     FilledButton.icon(
                       onPressed: () {
-                        print('Button Pressed');
+                        setState(() {
+                          _selectedBuilding = null;
+                          _showVisualRoutes = true;
+                        });
+                        _fetchVisualRoutes();
                       },
                       icon: Icon(Icons.visibility_outlined),
                       label: const Text('Rotas visuais'),
@@ -193,15 +235,98 @@ class _MapPageState extends State<MapPage> {
           AppBottomSheet(
             onDismissed: () => setState(() => _selectedBuilding = null),
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 300),
+              constraints: const BoxConstraints(maxWidth: 300),
               child: Text(
                 _selectedBuilding ?? '',
-                textAlign: .center,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
                   color: AppColors.primary[600],
-                  fontWeight: FontWeight(700),
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+            ),
+          ),
+        if (_showVisualRoutes)
+          AppBottomSheet(
+            onDismissed: () => setState(() => _showVisualRoutes = false),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                children: [
+                  Text(
+                    'Rotas Visuais',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppColors.primary[600],
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_isLoadingRoutes)
+                    const Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: CircularProgressIndicator(),
+                    )
+                  else if (_visualRoutesList.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text('Nenhuma rota visual encontrada.'),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _visualRoutesList.length,
+                      itemBuilder: (context, index) {
+                        final route = _visualRoutesList[index];
+                        final title = route['title'] ?? 'Sem título';
+                        final steps = route['steps'] ?? [];
+
+                        String lastImageUrl = '';
+                        if (steps.isNotEmpty) {
+                          // Find step with max stepOrder
+                          final sortedSteps =
+                              List<Map<String, dynamic>>.from(steps)..sort(
+                                (a, b) => (a['stepOrder'] as int).compareTo(
+                                  b['stepOrder'] as int,
+                                ),
+                              );
+                          lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
+                        }
+
+                        final storageBaseUrl =
+                            dotenv.env['STORAGE_BASE_URL'] ?? '';
+                        final fullImageUrl = lastImageUrl.isNotEmpty
+                            ? '$storageBaseUrl/$lastImageUrl'
+                            : '';
+
+                        return ListTile(
+                          leading: fullImageUrl.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.network(
+                                    fullImageUrl,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : const Icon(Icons.image_not_supported),
+                          title: Text(title),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DynamicVisualRoutePage(routeData: route),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                ],
               ),
             ),
           ),
