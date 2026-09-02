@@ -5,11 +5,13 @@ class AppBottomSheet extends StatefulWidget {
   const AppBottomSheet({
     super.key,
     required this.child,
+    this.initialChildSize = 0.98,
     this.maxChildSize = 0.98,
     this.onDismissed,
   });
 
   final Widget child;
+  final double initialChildSize;
   final double maxChildSize;
   final double minChildSize = 0;
   final VoidCallback? onDismissed;
@@ -32,7 +34,7 @@ class _AppBottomSheetState extends State<AppBottomSheet>
       vsync: this,
     );
 
-    _sizeAnimation = Tween<double>(begin: 0.0, end: widget.maxChildSize)
+    _sizeAnimation = Tween<double>(begin: 0.0, end: widget.initialChildSize)
         .animate(
           CurvedAnimation(
             parent: _controller,
@@ -85,7 +87,7 @@ class _AppBottomSheetState extends State<AppBottomSheet>
           },
           child: AnimatedBuilder(
             animation: _sizeAnimation,
-            builder: (context, _) {
+            builder: (context, child) {
               final currentAnimatedSize = _sizeAnimation.value;
 
               // Ensure minChildSize is never greater than the current animating size
@@ -95,7 +97,7 @@ class _AppBottomSheetState extends State<AppBottomSheet>
               );
 
               return DraggableScrollableSheet(
-                initialChildSize: currentAnimatedSize,
+                initialChildSize: _controller.isCompleted ? widget.initialChildSize : currentAnimatedSize,
                 maxChildSize: widget.maxChildSize,
                 // When closing via code, lock min to 0.0 so it can slide all the way down
                 minChildSize: _isClosing ? 0.0 : dynamicMinSize,

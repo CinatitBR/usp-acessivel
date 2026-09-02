@@ -8,32 +8,81 @@ import 'package:usp_acessivel/app_colors.dart';
 import './utils.dart';
 
 class MainMap extends StatefulWidget {
-  const MainMap({super.key, required this.onSelect, this.targetCenter});
+  const MainMap({super.key, required this.onSelect, this.targetCenter, this.targetKey});
 
   final void Function(String) onSelect;
   final Geographic? targetCenter;
+  final int? targetKey;
 
   @override
   State<MainMap> createState() => _MainMapState();
 }
 
-class _MainMapState extends State<MainMap> {
+class _MainMapState extends State<MainMap> with TickerProviderStateMixin {
   late final MapController _controller;
   late final Future<List<Feature<LineString>>> _waysFuture;
+  late final AnimationController _orbitController;
+  late final Animation<double> _orbitAnimation;
+  bool _isOrbiting = false;
 
   @override
   void initState() {
     super.initState();
     _waysFuture = loadWays();
+
+    _orbitController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 16),
+    );
+
+    _orbitAnimation = Tween<double>(begin: 0, end: 360).animate(_orbitController)
+      ..addListener(() {
+        if (_isOrbiting && widget.targetCenter != null) {
+          _controller.moveCamera(
+            center: widget.targetCenter,
+            bearing: _orbitAnimation.value,
+            pitch: 60, // 3D perspective
+            zoom: 17,
+          );
+        }
+      });
   }
 
   @override
   void didUpdateWidget(MainMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.targetCenter != null &&
-        widget.targetCenter != oldWidget.targetCenter) {
-      _controller.moveCamera(center: widget.targetCenter, zoom: 17);
+        (widget.targetCenter != oldWidget.targetCenter || widget.targetKey != oldWidget.targetKey)) {
+      _startOrbitAnimation();
+    } else if (widget.targetCenter == null && oldWidget.targetCenter != null) {
+      _stopOrbitAnimation();
     }
+  }
+
+  void _startOrbitAnimation() {
+    _isOrbiting = true;
+    _orbitController.value = 0.0;
+    _orbitController.repeat();
+  }
+
+  void _stopOrbitAnimation() {
+    if (_isOrbiting) {
+      _isOrbiting = false;
+      _orbitController.stop();
+      _orbitController.value = 0.0;
+      _controller.moveCamera(
+        center: widget.targetCenter ?? initCenter,
+        bearing: 0,
+        pitch: 0,
+        zoom: 17,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _orbitController.dispose();
+    super.dispose();
   }
 
   void _handleMapClick(MapEventClick event) async {
@@ -89,20 +138,27 @@ class _MainMapState extends State<MainMap> {
 
   @override
   Widget build(BuildContext context) {
-    return MapLibreMap(
-      options: MapOptions(
-        initStyle: "https://tiles.openfreemap.org/styles/liberty",
-        initCenter: initCenter,
-        initZoom: 17,
-        maxBounds: campusBounds,
-      ),
-      onMapCreated: (controller) => _controller = controller,
-      onEvent: (event) {
-        if (event is MapEventClick) {
-          _handleMapClick(event);
+    return Listener(
+      onPointerDown: (_) {
+        if (_isOrbiting) {
+          _stopOrbitAnimation();
         }
       },
-      onStyleLoaded: _handleStyleLoaded,
+      child: MapLibreMap(
+        options: MapOptions(
+          initStyle: "https://tiles.openfreemap.org/styles/liberty",
+          initCenter: initCenter,
+          initZoom: 17,
+          maxBounds: campusBounds,
+        ),
+        onMapCreated: (controller) => _controller = controller,
+        onEvent: (event) {
+          if (event is MapEventClick) {
+            _handleMapClick(event);
+          }
+        },
+        onStyleLoaded: _handleStyleLoaded,
+      ),
     );
   }
 }
