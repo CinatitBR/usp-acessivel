@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'app_bottom_sheet.dart';
 
 class DynamicVisualRoutePage extends StatelessWidget {
   final Map<String, dynamic> routeData;
@@ -18,29 +17,32 @@ class DynamicVisualRoutePage extends StatelessWidget {
     )..sort((a, b) => (a['stepOrder'] as int).compareTo(b['stepOrder'] as int));
 
     return Scaffold(
-      backgroundColor: Colors
-          .transparent, // Required for bottom sheet to look right if pushed
-      body: AppBottomSheet(
-        onDismissed: () => Navigator.of(context).pop(),
-        child: Column(
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Color(0xFF133B99),
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            for (int i = 0; i < sortedSteps.length; i++)
-              _StepItem(
-                index: i,
-                step: sortedSteps[i],
-                isLast: i == sortedSteps.length - 1,
-              ),
-          ],
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFF133B99),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF133B99)),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: Column(
+            children: [
+              for (int i = 0; i < sortedSteps.length; i++)
+                _StepItem(
+                  index: i,
+                  step: sortedSteps[i],
+                  isLast: i == sortedSteps.length - 1,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -98,7 +100,9 @@ class _StepItem extends StatelessWidget {
                         if (isLast)
                           const Icon(Icons.place, color: Color(0xFF22C55E))
                         else if (index == 0)
-                          const Icon(Icons.place, color: Color(0xFF133B99)),
+                          const Icon(Icons.place, color: Color(0xFF133B99))
+                        else
+                          const Icon(Icons.place, color: Colors.transparent),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(

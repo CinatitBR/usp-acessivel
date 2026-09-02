@@ -20,6 +20,9 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   String? _selectedBuilding;
+
+  bool _isLoadingBuildingRoutes = false;
+  List<dynamic> _buildingVisualRoutesList = [];
   bool _showVisualRoutes = false;
   bool _isLoadingRoutes = false;
   List<dynamic> _visualRoutesList = [];
@@ -38,6 +41,38 @@ class _MapPageState extends State<MapPage> {
       setState(() {
         _buildingEntries = entries;
       });
+    }
+  }
+
+  Future<void> _fetchBuildingVisualRoutes(String buildingId) async {
+    setState(() {
+      _isLoadingBuildingRoutes = true;
+      _buildingVisualRoutesList = [];
+    });
+
+    try {
+      final dio = Dio();
+      final baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8787';
+      final response = await dio.get(
+        '$baseUrl/buildings/$buildingId/accessibility',
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = response.data['data'];
+        if (mounted && data != null) {
+          setState(() {
+            _buildingVisualRoutesList = data['visualRoutes'] ?? [];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching building visual routes: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingBuildingRoutes = false;
+        });
+      }
     }
   }
 
@@ -118,9 +153,26 @@ class _MapPageState extends State<MapPage> {
       children: [
         MainMap(
           targetCenter: _targetCenter,
-          onSelect: (name) => setState(() {
-            _selectedBuilding = name;
-          }),
+          onSelect: (name) {
+            final building = _buildingEntries.cast<Building?>().firstWhere(
+              (b) => b?.name == name,
+              orElse: () => null,
+            );
+            if (building != null) {
+              setState(() {
+                _showVisualRoutes = false;
+                _selectedBuilding = building.name;
+              });
+              _fetchBuildingVisualRoutes(building.id);
+            } else {
+              setState(() {
+                _selectedBuilding = name;
+
+                _buildingVisualRoutesList = [];
+                _isLoadingBuildingRoutes = false;
+              });
+            }
+          },
         ),
         SafeArea(
           child: Padding(
@@ -144,12 +196,15 @@ class _MapPageState extends State<MapPage> {
                     FocusScope.of(context).unfocus();
 
                     setState(() {
+                      _showVisualRoutes = false;
                       _selectedBuilding = selection.name;
+
                       _targetCenter = Geographic(
                         lat: selection.latitude,
                         lon: selection.longitude,
                       );
                     });
+                    _fetchBuildingVisualRoutes(selection.id);
                   },
                   fieldViewBuilder:
                       (
@@ -235,15 +290,84 @@ class _MapPageState extends State<MapPage> {
           AppBottomSheet(
             onDismissed: () => setState(() => _selectedBuilding = null),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 300),
-              child: Text(
-                _selectedBuilding ?? '',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.primary[600],
-                  fontWeight: FontWeight.w700,
-                ),
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                children: [
+                  Text(
+                    _selectedBuilding ?? '',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppColors.primary[600],
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_isLoadingBuildingRoutes)
+                    const Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: CircularProgressIndicator(),
+                    )
+                  else if (_buildingVisualRoutesList.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text(
+                        'Nenhuma rota visual encontrada para este edifício.',
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _buildingVisualRoutesList.length,
+                      itemBuilder: (context, index) {
+                        final route = _buildingVisualRoutesList[index];
+                        final title = route['title'] ?? 'Sem título';
+                        final steps = route['steps'] ?? [];
+
+                        String lastImageUrl = '';
+                        if (steps.isNotEmpty) {
+                          final sortedSteps =
+                              List<Map<String, dynamic>>.from(steps)..sort(
+                                (a, b) => (a['stepOrder'] as int).compareTo(
+                                  b['stepOrder'] as int,
+                                ),
+                              );
+                          lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
+                        }
+
+                        final storageBaseUrl =
+                            dotenv.env['STORAGE_BASE_URL'] ?? '';
+                        final fullImageUrl = lastImageUrl.isNotEmpty
+                            ? '$storageBaseUrl/$lastImageUrl'
+                            : '';
+
+                        return ListTile(
+                          leading: fullImageUrl.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.network(
+                                    fullImageUrl,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : const Icon(Icons.image_not_supported),
+                          title: Text(title),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DynamicVisualRoutePage(routeData: route),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                ],
               ),
             ),
           ),
