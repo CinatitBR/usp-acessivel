@@ -12,12 +12,12 @@ class MainMap extends StatefulWidget {
     super.key,
     required this.onSelect,
     this.targetCenter,
-    this.children = const [],
+    this.onReportSelect,
   });
 
   final void Function(String) onSelect;
+  final VoidCallback? onReportSelect;
   final Geographic? targetCenter;
-  final List<Widget> children;
 
   @override
   State<MainMap> createState() => _MainMapState();
@@ -43,6 +43,18 @@ class _MainMapState extends State<MainMap> {
   }
 
   void _handleMapClick(MapEventClick event) async {
+    // Check for map reports first
+    final featuresReports = _controller.featuresAtPoint(
+      event.screenPoint,
+      layerIds: ['map_reports_layer'],
+    );
+    if (featuresReports.isNotEmpty) {
+      if (widget.onReportSelect != null) {
+        widget.onReportSelect!();
+      }
+      return; // Stop processing other clicks if a report was clicked
+    }
+
     final features = _controller.featuresAtPoint(
       event.screenPoint,
       layerIds: ['ways', 'usp_buildings'],
@@ -102,7 +114,6 @@ class _MainMapState extends State<MainMap> {
         initZoom: 17,
         maxBounds: campusBounds,
       ),
-      children: widget.children,
       onMapCreated: (controller) => _controller = controller,
       onEvent: (event) {
         if (event is MapEventClick) {
@@ -145,6 +156,20 @@ void _handleStyleLoaded(StyleController style) async {
       data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
     ),
   );
+
+  // Map reports source
+  final mapReportsFeatureCollection = FeatureCollection([
+    Feature<Point>(
+      geometry: Point(Position.create(x: -46.72695, y: -23.56289)),
+      properties: {'type': 'report'},
+    ),
+  ]);
+  await style.addSource(
+    GeoJsonSource(
+      id: 'map_reports',
+      data: mapReportsFeatureCollection.toString(),
+    ),
+  );
   // --- Images/Icons ---
   await style.addImageFromAssets(
     id: 'concreto-escuro',
@@ -160,6 +185,12 @@ void _handleStyleLoaded(StyleController style) async {
   await style.addImageFromAssets(
     id: 'school-icon',
     asset: 'assets/map-icons/school-icon.png',
+  );
+  await style.addImageFromIconData(
+    id: 'report-icon',
+    iconData: Icons.stairs,
+    color: Colors.red,
+    size: 32,
   );
   // --- Layers ---
   // Ways layer
@@ -179,6 +210,21 @@ void _handleStyleLoaded(StyleController style) async {
       sourceId: 'selected-way',
       id: 'selected-way-fill',
       paint: {'fill-color': '#FF4081', 'fill-pattern': 'concreto-escuro'},
+    ),
+  );
+
+  // Map reports layer
+  await style.addLayer(
+    SymbolStyleLayer(
+      sourceId: 'map_reports',
+      id: 'map_reports_layer',
+      layout: {
+        'icon-image': 'report-icon',
+        'icon-size': 1.0,
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      minZoom: 14,
     ),
   );
 

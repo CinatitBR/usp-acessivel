@@ -175,32 +175,7 @@ class _MapPageState extends State<MapPage> {
       children: [
         MainMap(
           targetCenter: _targetCenter,
-          children: [
-            WidgetLayer(
-              markers: [
-                Marker(
-                  point: const Geographic(lat: -23.56289, lon: -46.72695),
-                  size: const Size(32, 32),
-                  alignment: Alignment.center,
-                  child: GestureDetector(
-                    onTap: _showReportDialog,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.stairs,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          onReportSelect: _showReportDialog,
           onSelect: (name) {
             final building = _buildingEntries.cast<Building?>().firstWhere(
               (b) => b?.name == name,
