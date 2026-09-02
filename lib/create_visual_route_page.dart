@@ -66,16 +66,20 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     // 1. Instant check if already loaded
     if (BuildingRepository.instance.cachedEntries.isNotEmpty) {
       setState(() {
-        _buildingEntries = BuildingRepository.instance.cachedEntries;
+        _buildingEntries = BuildingRepository.instance.cachedEntries
+            .map((b) => DropdownMenuEntry<String>(value: b.id, label: b.name))
+            .toList();
       });
       return;
     }
 
     // 2. Fallback to async retrieval if not yet loaded
-    final entries = await BuildingRepository.instance.getBuildingEntries();
+    final buildings = await BuildingRepository.instance.getBuildingEntries();
     if (mounted) {
       setState(() {
-        _buildingEntries = entries;
+        _buildingEntries = buildings
+            .map((b) => DropdownMenuEntry<String>(value: b.id, label: b.name))
+            .toList();
       });
     }
   }
