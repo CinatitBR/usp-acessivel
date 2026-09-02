@@ -87,72 +87,95 @@ class _MapPageState extends State<MapPage> {
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Autocomplete<Building>(
-              displayStringForOption: (Building option) => option.name,
-              optionsBuilder: (TextEditingValue textEditingValue) {
-                if (textEditingValue.text.isEmpty) {
-                  return const Iterable<Building>.empty();
-                }
-                return _buildingEntries.where((Building option) {
-                  return option.name.toLowerCase().contains(
-                    textEditingValue.text.toLowerCase(),
-                  );
-                });
-              },
-              onSelected: (Building selection) {
-                // Hide keyboard upon selection
-                FocusScope.of(context).unfocus();
+            child: Column(
+              children: [
+                Autocomplete<Building>(
+                  displayStringForOption: (Building option) => option.name,
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    if (textEditingValue.text.isEmpty) {
+                      return const Iterable<Building>.empty();
+                    }
+                    return _buildingEntries.where((Building option) {
+                      return option.name.toLowerCase().contains(
+                        textEditingValue.text.toLowerCase(),
+                      );
+                    });
+                  },
+                  onSelected: (Building selection) {
+                    // Hide keyboard upon selection
+                    FocusScope.of(context).unfocus();
 
-                setState(() {
-                  _selectedBuilding = selection.name;
-                  _targetCenter = Geographic(
-                    lat: selection.latitude,
-                    lon: selection.longitude,
-                  );
-                });
-              },
-              fieldViewBuilder:
-                  (
-                    BuildContext context,
-                    TextEditingController fieldTextEditingController,
-                    FocusNode fieldFocusNode,
-                    VoidCallback onFieldSubmitted,
-                  ) {
-                    return TextField(
-                      controller: fieldTextEditingController,
-                      focusNode: fieldFocusNode,
-                      decoration: InputDecoration(
-                        hintText: 'Buscar edifício',
-                        hintStyle: TextStyle(color: AppColors.neutral[400]),
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: AppColors.neutral[400],
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.neutral[200]!,
+                    setState(() {
+                      _selectedBuilding = selection.name;
+                      _targetCenter = Geographic(
+                        lat: selection.latitude,
+                        lon: selection.longitude,
+                      );
+                    });
+                  },
+                  fieldViewBuilder:
+                      (
+                        BuildContext context,
+                        TextEditingController fieldTextEditingController,
+                        FocusNode fieldFocusNode,
+                        VoidCallback onFieldSubmitted,
+                      ) {
+                        return TextField(
+                          controller: fieldTextEditingController,
+                          focusNode: fieldFocusNode,
+                          decoration: InputDecoration(
+                            hintText: 'Buscar edifício',
+                            hintStyle: TextStyle(color: AppColors.neutral[400]),
+                            filled: true,
+                            fillColor: Colors.white,
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: AppColors.neutral[400],
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: AppColors.neutral[200]!,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: AppColors.neutral[200]!,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: AppColors.primary),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                           ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.neutral[200]!,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.primary),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
+                        );
+                      },
+                ),
+                Row(
+                  children: [
+                    FilledButton.icon(
+                      onPressed: () {
+                        print('Button Pressed');
+                      },
+                      icon: Icon(Icons.visibility_outlined),
+                      label: const Text('Rotas visuais'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 12,
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
