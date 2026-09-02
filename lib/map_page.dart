@@ -18,6 +18,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   String? _selectedBuilding;
   Geographic? _targetCenter;
+  int _targetKey = 0;
   List<Building> _buildingEntries = [];
 
   @override
@@ -80,8 +81,17 @@ class _MapPageState extends State<MapPage> {
       children: [
         MainMap(
           targetCenter: _targetCenter,
+          targetKey: _targetKey,
           onSelect: (name) => setState(() {
             _selectedBuilding = name;
+            final building = _buildingEntries.where((b) => b.name == name).firstOrNull;
+            if (building != null) {
+              _targetCenter = Geographic(
+                lat: building.latitude,
+                lon: building.longitude,
+              );
+            }
+            _targetKey++;
           }),
         ),
         SafeArea(
@@ -109,6 +119,7 @@ class _MapPageState extends State<MapPage> {
                     lat: selection.latitude,
                     lon: selection.longitude,
                   );
+                  _targetKey++;
                 });
               },
               fieldViewBuilder:
@@ -168,7 +179,12 @@ class _MapPageState extends State<MapPage> {
         ),
         if (_selectedBuilding != null)
           AppBottomSheet(
-            onDismissed: () => setState(() => _selectedBuilding = null),
+            initialChildSize: 0.2,
+            onDismissed: () => setState(() {
+              _selectedBuilding = null;
+              _targetCenter = null;
+              _targetKey++;
+            }),
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 300),
               child: Text(
