@@ -8,10 +8,16 @@ import 'package:usp_acessivel/app_colors.dart';
 import './utils.dart';
 
 class MainMap extends StatefulWidget {
-  const MainMap({super.key, required this.onSelect, this.targetCenter});
+  const MainMap({
+    super.key,
+    required this.onSelect,
+    this.targetCenter,
+    this.children = const [],
+  });
 
   final void Function(String) onSelect;
   final Geographic? targetCenter;
+  final List<Widget> children;
 
   @override
   State<MainMap> createState() => _MainMapState();
@@ -96,6 +102,7 @@ class _MainMapState extends State<MainMap> {
         initZoom: 17,
         maxBounds: campusBounds,
       ),
+      children: widget.children,
       onMapCreated: (controller) => _controller = controller,
       onEvent: (event) {
         if (event is MapEventClick) {

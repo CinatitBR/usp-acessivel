@@ -44,6 +44,28 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  void _showReportDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Escadaria da química'),
+          content: const Text(
+            'A escadaria que leva até o bandejão da química é longa e íngrime, '
+            'com degraus estreitos e corrimão defeituoso. Muitos degraus são '
+            'defeituosos e estimulam a queda.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Fechar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _fetchBuildingVisualRoutes(String buildingId) async {
     setState(() {
       _isLoadingBuildingRoutes = true;
@@ -153,6 +175,32 @@ class _MapPageState extends State<MapPage> {
       children: [
         MainMap(
           targetCenter: _targetCenter,
+          children: [
+            WidgetLayer(
+              markers: [
+                Marker(
+                  point: const Geographic(lat: -23.56289, lon: -46.72695),
+                  size: const Size(32, 32),
+                  alignment: Alignment.center,
+                  child: GestureDetector(
+                    onTap: _showReportDialog,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.stairs,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           onSelect: (name) {
             final building = _buildingEntries.cast<Building?>().firstWhere(
               (b) => b?.name == name,
