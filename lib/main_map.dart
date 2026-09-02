@@ -8,9 +8,10 @@ import 'package:usp_acessivel/app_colors.dart';
 import './utils.dart';
 
 class MainMap extends StatefulWidget {
-  const MainMap({super.key, required this.onSelect});
+  const MainMap({super.key, required this.onSelect, this.targetCenter});
 
   final void Function(String) onSelect;
+  final Geographic? targetCenter;
 
   @override
   State<MainMap> createState() => _MainMapState();
@@ -24,6 +25,15 @@ class _MainMapState extends State<MainMap> {
   void initState() {
     super.initState();
     _waysFuture = loadWays();
+  }
+
+  @override
+  void didUpdateWidget(MainMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.targetCenter != null &&
+        widget.targetCenter != oldWidget.targetCenter) {
+      _controller.moveCamera(center: widget.targetCenter, zoom: 17);
+    }
   }
 
   void _handleMapClick(MapEventClick event) async {
