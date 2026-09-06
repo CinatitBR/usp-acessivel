@@ -45,15 +45,19 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _showReportDialog() {
+    print('Teste, clicado');
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Escadaria da química'),
-          content: const Text(
-            'A escadaria que leva até o bandejão da química é longa e íngrime, '
-            'com degraus estreitos e corrimão defeituoso. Muitos degraus são '
-            'defeituosos e estimulam a queda.',
+          title: Text(
+            'Escadaria da química',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          content: Text(
+            '⚠️ A escadaria que leva até o bandejão da química é longa e íngrime, '
+            'com degraus estreitos e corrimão defeituoso. ',
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
           actions: [
             TextButton(
@@ -177,6 +181,7 @@ class _MapPageState extends State<MapPage> {
           targetCenter: _targetCenter,
           children: [
             WidgetLayer(
+              allowInteraction: true,
               markers: [
                 Marker(
                   point: const Geographic(lat: -23.56289, lon: -46.72695),

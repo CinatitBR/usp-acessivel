@@ -102,7 +102,6 @@ class _MainMapState extends State<MainMap> {
         initZoom: 17,
         maxBounds: campusBounds,
       ),
-      children: widget.children,
       onMapCreated: (controller) => _controller = controller,
       onEvent: (event) {
         if (event is MapEventClick) {
@@ -110,6 +109,7 @@ class _MainMapState extends State<MainMap> {
         }
       },
       onStyleLoaded: _handleStyleLoaded,
+      children: widget.children,
     );
   }
 }
