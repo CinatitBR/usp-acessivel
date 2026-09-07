@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre/maplibre.dart';
+import 'package:usp_acessivel/simposios_list_page.dart';
 import 'building_repository.dart';
 
 import 'app_colors.dart';
@@ -173,6 +174,27 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  void _handleSelect(String name) {
+    final building = _buildingEntries.cast<Building?>().firstWhere(
+      (b) => b?.name == name,
+      orElse: () => null,
+    );
+    if (building != null) {
+      setState(() {
+        _showVisualRoutes = false;
+        _selectedBuilding = building.name;
+      });
+      _fetchBuildingVisualRoutes(building.id);
+    } else {
+      setState(() {
+        _selectedBuilding = name;
+
+        _buildingVisualRoutesList = [];
+        _isLoadingBuildingRoutes = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -180,26 +202,7 @@ class _MapPageState extends State<MapPage> {
         MainMap(
           targetCenter: _targetCenter,
           onReportSelect: _showReportDialog,
-          onSelect: (name) {
-            final building = _buildingEntries.cast<Building?>().firstWhere(
-              (b) => b?.name == name,
-              orElse: () => null,
-            );
-            if (building != null) {
-              setState(() {
-                _showVisualRoutes = false;
-                _selectedBuilding = building.name;
-              });
-              _fetchBuildingVisualRoutes(building.id);
-            } else {
-              setState(() {
-                _selectedBuilding = name;
-
-                _buildingVisualRoutesList = [];
-                _isLoadingBuildingRoutes = false;
-              });
-            }
-          },
+          onSelect: _handleSelect,
         ),
         SafeArea(
           child: Padding(
@@ -314,89 +317,8 @@ class _MapPageState extends State<MapPage> {
           ),
         ),
         if (_selectedBuilding != null)
-          AppBottomSheet(
+          CbsoftBottomSheet(
             onDismissed: () => setState(() => _selectedBuilding = null),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                children: [
-                  Text(
-                    _selectedBuilding ?? '',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.primary[600],
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_isLoadingBuildingRoutes)
-                    const Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: CircularProgressIndicator(),
-                    )
-                  else if (_buildingVisualRoutesList.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Text(
-                        'Nenhuma rota visual encontrada para este edifício.',
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _buildingVisualRoutesList.length,
-                      itemBuilder: (context, index) {
-                        final route = _buildingVisualRoutesList[index];
-                        final title = route['title'] ?? 'Sem título';
-                        final steps = route['steps'] ?? [];
-
-                        String lastImageUrl = '';
-                        if (steps.isNotEmpty) {
-                          final sortedSteps =
-                              List<Map<String, dynamic>>.from(steps)..sort(
-                                (a, b) => (a['stepOrder'] as int).compareTo(
-                                  b['stepOrder'] as int,
-                                ),
-                              );
-                          lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
-                        }
-
-                        final storageBaseUrl =
-                            dotenv.env['STORAGE_BASE_URL'] ?? '';
-                        final fullImageUrl = lastImageUrl.isNotEmpty
-                            ? '$storageBaseUrl/$lastImageUrl'
-                            : '';
-
-                        return ListTile(
-                          leading: fullImageUrl.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Image.network(
-                                    fullImageUrl,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : const Icon(Icons.image_not_supported),
-                          title: Text(title),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DynamicVisualRoutePage(routeData: route),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
           ),
         if (_showVisualRoutes)
           AppBottomSheet(
@@ -485,3 +407,201 @@ class _MapPageState extends State<MapPage> {
     );
   }
 }
+
+class CbsoftBottomSheet extends StatelessWidget {
+  final VoidCallback? onDismissed;
+  final String? selectedBuilding;
+
+  const CbsoftBottomSheet({super.key, this.onDismissed, this.selectedBuilding});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBottomSheet(
+      onDismissed: onDismissed,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: SimposiosListWithFilter(),
+        // child: Column(
+        //   children: [
+        //     Text(
+        //       selectedBuilding ?? '',
+        //       textAlign: TextAlign.center,
+        //       style: TextStyle(
+        //         fontSize: 18,
+        //         color: AppColors.primary[600],
+        //         fontWeight: FontWeight.w700,
+        //       ),
+        //     ),
+        //     const SizedBox(height: 16),
+
+        //     if (_isLoadingBuildingRoutes)
+        //       const Padding(
+        //         padding: EdgeInsets.all(24.0),
+        //         child: CircularProgressIndicator(),
+        //       )
+        //     else if (_buildingVisualRoutesList.isEmpty)
+        //       const Padding(
+        //         padding: EdgeInsets.all(24.0),
+        //         child: Text(
+        //           'Nenhuma rota visual encontrada para este edifício.',
+        //         ),
+        //       )
+        //     else
+        //       ListView.builder(
+        //         shrinkWrap: true,
+        //         physics: const NeverScrollableScrollPhysics(),
+        //         itemCount: _buildingVisualRoutesList.length,
+        //         itemBuilder: (context, index) {
+        //           final route = _buildingVisualRoutesList[index];
+        //           final title = route['title'] ?? 'Sem título';
+        //           final steps = route['steps'] ?? [];
+
+        //           String lastImageUrl = '';
+        //           if (steps.isNotEmpty) {
+        //             final sortedSteps =
+        //                 List<Map<String, dynamic>>.from(steps)..sort(
+        //                   (a, b) => (a['stepOrder'] as int).compareTo(
+        //                     b['stepOrder'] as int,
+        //                   ),
+        //                 );
+        //             lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
+        //           }
+
+        //           final storageBaseUrl =
+        //               dotenv.env['STORAGE_BASE_URL'] ?? '';
+        //           final fullImageUrl = lastImageUrl.isNotEmpty
+        //               ? '$storageBaseUrl/$lastImageUrl'
+        //               : '';
+
+        //           return ListTile(
+        //             leading: fullImageUrl.isNotEmpty
+        //                 ? ClipRRect(
+        //                     borderRadius: BorderRadius.circular(4),
+        //                     child: Image.network(
+        //                       fullImageUrl,
+        //                       width: 50,
+        //                       height: 50,
+        //                       fit: BoxFit.cover,
+        //                     ),
+        //                   )
+        //                 : const Icon(Icons.image_not_supported),
+        //             title: Text(title),
+        //             trailing: const Icon(Icons.chevron_right),
+        //             onTap: () {
+        //               Navigator.of(context).push(
+        //                 MaterialPageRoute(
+        //                   builder: (context) =>
+        //                       DynamicVisualRoutePage(routeData: route),
+        //                 ),
+        //               );
+        //             },
+        //           );
+        //         },
+        //       ),
+        //   ],
+        // ),
+      ),
+    );
+  }
+}
+
+// class SimposiosList extends StatelessWidget {
+//   const SimposiosList({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Placeholder();
+//   }
+// }
+
+// class BuildingBottomSheet extends StatelessWidget {
+//   const BuildingBottomSheet({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return AppBottomSheet(
+//             onDismissed: () => setState(() => _selectedBuilding = null),
+//             child: ConstrainedBox(
+//               constraints: const BoxConstraints(maxWidth: 400),
+//               child: Column(
+//                 children: [
+//                   Text(
+//                     _selectedBuilding ?? '',
+//                     textAlign: TextAlign.center,
+//                     style: TextStyle(
+//                       fontSize: 18,
+//                       color: AppColors.primary[600],
+//                       fontWeight: FontWeight.w700,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 16),
+//                   if (_isLoadingBuildingRoutes)
+//                     const Padding(
+//                       padding: EdgeInsets.all(24.0),
+//                       child: CircularProgressIndicator(),
+//                     )
+//                   else if (_buildingVisualRoutesList.isEmpty)
+//                     const Padding(
+//                       padding: EdgeInsets.all(24.0),
+//                       child: Text(
+//                         'Nenhuma rota visual encontrada para este edifício.',
+//                       ),
+//                     )
+//                   else
+//                     ListView.builder(
+//                       shrinkWrap: true,
+//                       physics: const NeverScrollableScrollPhysics(),
+//                       itemCount: _buildingVisualRoutesList.length,
+//                       itemBuilder: (context, index) {
+//                         final route = _buildingVisualRoutesList[index];
+//                         final title = route['title'] ?? 'Sem título';
+//                         final steps = route['steps'] ?? [];
+
+//                         String lastImageUrl = '';
+//                         if (steps.isNotEmpty) {
+//                           final sortedSteps =
+//                               List<Map<String, dynamic>>.from(steps)..sort(
+//                                 (a, b) => (a['stepOrder'] as int).compareTo(
+//                                   b['stepOrder'] as int,
+//                                 ),
+//                               );
+//                           lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
+//                         }
+
+//                         final storageBaseUrl =
+//                             dotenv.env['STORAGE_BASE_URL'] ?? '';
+//                         final fullImageUrl = lastImageUrl.isNotEmpty
+//                             ? '$storageBaseUrl/$lastImageUrl'
+//                             : '';
+
+//                         return ListTile(
+//                           leading: fullImageUrl.isNotEmpty
+//                               ? ClipRRect(
+//                                   borderRadius: BorderRadius.circular(4),
+//                                   child: Image.network(
+//                                     fullImageUrl,
+//                                     width: 50,
+//                                     height: 50,
+//                                     fit: BoxFit.cover,
+//                                   ),
+//                                 )
+//                               : const Icon(Icons.image_not_supported),
+//                           title: Text(title),
+//                           trailing: const Icon(Icons.chevron_right),
+//                           onTap: () {
+//                             Navigator.of(context).push(
+//                               MaterialPageRoute(
+//                                 builder: (context) =>
+//                                     DynamicVisualRoutePage(routeData: route),
+//                               ),
+//                             );
+//                           },
+//                         );
+//                       },
+//                     ),
+//                 ],
+//               ),
+//             ),
+//           );
+//   }
+// }

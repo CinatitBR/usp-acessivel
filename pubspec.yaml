@@ -29,6 +29,12 @@ flutter:
     - family: Manrope
       fonts:
         - asset: fonts/Manrope-VariableFont_wght.ttf
+    - family: AlegreyaSans
+      fonts:
+        - asset: fonts/AlegreyaSans-Regular.ttf
+          weight: 400
+        - asset: fonts/AlegreyaSans-Medium.ttf
+          weight: 500
   assets:
     - data/
     - assets/tiles/

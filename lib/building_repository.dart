@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Parse usp_buildings.geojson to extract id and name of buildings, and cache the result to be used

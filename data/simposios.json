@@ -1,0 +1,22 @@
+[
+  {
+    "id": "sbes",
+    "title": "Simpósio Brasileiro de Engenharia de Software (SBES)",
+    "classroom": "Sala B01"
+  },
+  {
+    "id": "sblp",
+    "title": "Simpósio Brasileiro de Linguagens de Programação (SBLP)",
+    "classroom": "Sala B02"
+  },
+  {
+    "id": "sbcars",
+    "title": "Simpósio Brasileiro de Componentes, Arquiteturas e Reutilização de Software (SBCARS)",
+    "classroom": "Sala B05"
+  },
+  {
+    "id": "sast",
+    "title": "Simpósio Brasileiro de Teste de Software Sistemático e Automatizado (SAST)",
+    "classroom": "Sala B04"
+  }
+]

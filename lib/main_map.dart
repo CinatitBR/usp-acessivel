@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
 
 import 'package:maplibre/maplibre.dart';
+import 'package:usp_acessivel/event_list_card.dart';
 
 import 'package:usp_acessivel/app_colors.dart';
 import './utils.dart';
@@ -42,7 +43,24 @@ class _MainMapState extends State<MainMap> {
     }
   }
 
+  void _handleCbsoftLayersClick(MapEventClick event) async {
+    final features = _controller.featuresAtPoint(
+      event.screenPoint,
+      layerIds: ['event_card_ime_layer', 'event_card_fau_layer'],
+    );
+
+    print("Features CBSOFT clicked: $features");
+    if (features.isNotEmpty) {
+      final feature = features.first;
+      final buildingId = feature.properties['id'];
+      if (buildingId is String) {
+        widget.onSelect(buildingId);
+      }
+    }
+  }
+
   void _handleMapClick(MapEventClick event) async {
+    _handleCbsoftLayersClick(event);
     // Check for map reports first
     final featuresReports = _controller.featuresAtPoint(
       event.screenPoint,
@@ -121,7 +139,6 @@ class _MainMapState extends State<MainMap> {
         }
       },
       onStyleLoaded: _handleStyleLoaded,
-      // children: widget.children,
     );
   }
 }
@@ -143,6 +160,24 @@ void _handleStyleLoaded(StyleController style) async {
   style.removeLayer('poi_r7');
   style.removeLayer('poi_r20');
 
+  // Create event cards
+  style.addImageFromWidget(
+    id: 'event_card_ime',
+    widget: EventListCard(
+      title: 'IME',
+      icon: Icons.record_voice_over_outlined,
+      events: ['Simpósios'],
+    ),
+  );
+  style.addImageFromWidget(
+    id: 'event_card_fau',
+    widget: EventListCard(
+      title: 'FAU',
+      icon: Icons.confirmation_number_outlined,
+      events: ['Credenciamento', 'Coffee Break'],
+    ),
+  );
+
   // Load data
   final waysStr = await rootBundle.loadString('data/ways.json');
   final buildingsStr = await rootBundle.loadString(
@@ -157,6 +192,49 @@ void _handleStyleLoaded(StyleController style) async {
       data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
     ),
   );
+
+  //  -- CBSOFT --
+  // Add event card layers
+  await style.addLayer(
+    SymbolStyleLayer(
+      sourceId: 'buildings',
+      id: 'event_card_ime_layer',
+      filter: [
+        '==',
+        ['get', 'id'],
+        'ime',
+      ],
+      layout: {
+        'icon-image': 'event_card_ime',
+        'icon-size': 0.4,
+        'icon-anchor': 'bottom',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      minZoom: 16,
+    ),
+  );
+
+  await style.addLayer(
+    SymbolStyleLayer(
+      sourceId: 'buildings',
+      id: 'event_card_fau_layer',
+      filter: [
+        '==',
+        ['get', 'id'],
+        'fau',
+      ],
+      layout: {
+        'icon-image': 'event_card_fau',
+        'icon-size': 0.4,
+        'icon-anchor': 'bottom',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      minZoom: 16,
+    ),
+  );
+  // --- ---
 
   // Map reports source
   final mapReportsFeatureCollection = FeatureCollection([
@@ -230,35 +308,35 @@ void _handleStyleLoaded(StyleController style) async {
   );
 
   // Buildings layer - FIXED
-  await style.addLayer(
-    SymbolStyleLayer(
-      sourceId: 'buildings',
-      id: 'usp_buildings',
-      layout: {
-        'text-field': ['get', 'display_name'],
-        'text-font': ['Noto Sans Italic'],
-        'icon-image': 'school-icon', // ✅ FIXED: Use the icon we created
-        'icon-size': 0.5,
-        'text-size': 12,
-        'text-anchor': 'top',
-        'text-offset': [0, 1],
-        'text-max-width': 8,
-        'symbol-placement': 'point',
-        // 🛠️ EXTRA INSURANCE: Prevent collision engine from hiding symbols
-        'icon-allow-overlap': true,
-        'text-allow-overlap': true,
-        'icon-ignore-placement': true,
-        'text-ignore-placement': true,
-      },
-      paint: {
-        // ✅ ADDED: Paint properties were missing!
-        'text-color': '#666',
-        'text-halo-color': '#FFFFFF',
-        'text-halo-width': 1.5,
-      },
-      minZoom: 14, // ✅ FIXED: Lowered from 15 to ensure visibility
-    ),
-  );
+  // await style.addLayer(
+  //   SymbolStyleLayer(
+  //     sourceId: 'buildings',
+  //     id: 'usp_buildings',
+  //     layout: {
+  //       'text-field': ['get', 'display_name'],
+  //       'text-font': ['Noto Sans Italic'],
+  //       'icon-image': 'school-icon', // ✅ FIXED: Use the icon we created
+  //       'icon-size': 0.5,
+  //       'text-size': 12,
+  //       'text-anchor': 'top',
+  //       'text-offset': [0, 1],
+  //       'text-max-width': 8,
+  //       'symbol-placement': 'point',
+  //       // 🛠️ EXTRA INSURANCE: Prevent collision engine from hiding symbols
+  //       'icon-allow-overlap': true,
+  //       'text-allow-overlap': true,
+  //       'icon-ignore-placement': true,
+  //       'text-ignore-placement': true,
+  //     },
+  //     paint: {
+  //       // ✅ ADDED: Paint properties were missing!
+  //       'text-color': '#666',
+  //       'text-halo-color': '#FFFFFF',
+  //       'text-halo-width': 1.5,
+  //     },
+  //     minZoom: 14, // ✅ FIXED: Lowered from 15 to ensure visibility
+  //   ),
+  // );
 }
 
 Future<List<Feature<Point>>> loadBuildings() async {
