@@ -24,11 +24,11 @@ class _MapPageState extends State<MapPage> {
   String? _selectedBuilding;
 
   bool _isLoadingBuildingAcessibilities = false;
-  List<dynamic> _buildingVisualRoutesList = [];
+  List<dynamic> _buildingVisualRoutes = [];
   List<dynamic> _buildingPoisList = [];
   bool _showAllVisualRoutes = false;
   bool _isLoadingRoutes = false;
-  List<dynamic> _visualRoutesList = [];
+  List<dynamic> _allVisualRoutes = [];
   Geographic? _targetCenter;
   List<Building> _buildingEntries = [];
 
@@ -76,7 +76,7 @@ class _MapPageState extends State<MapPage> {
   Future<void> _fetchBuildingAcessibilities(String buildingId) async {
     setState(() {
       _isLoadingBuildingAcessibilities = true;
-      _buildingVisualRoutesList = [];
+      _buildingVisualRoutes = [];
       _buildingPoisList = [];
     });
 
@@ -91,7 +91,7 @@ class _MapPageState extends State<MapPage> {
         final data = response.data['data'];
         if (mounted && data != null) {
           setState(() {
-            _buildingVisualRoutesList = data['visualRoutes'] ?? [];
+            _buildingVisualRoutes = data['visualRoutes'] ?? [];
             _buildingPoisList = data['pois'] ?? [];
           });
         }
@@ -110,7 +110,7 @@ class _MapPageState extends State<MapPage> {
   Future<void> _fetchAllVisualRoutes() async {
     setState(() {
       _isLoadingRoutes = true;
-      _visualRoutesList = [];
+      _allVisualRoutes = [];
     });
 
     try {
@@ -124,7 +124,7 @@ class _MapPageState extends State<MapPage> {
       if (response.statusCode == 200 && response.data['success'] == true) {
         if (mounted) {
           setState(() {
-            _visualRoutesList = response.data['data'] ?? [];
+            _allVisualRoutes = response.data['data'] ?? [];
           });
         }
       }
@@ -217,7 +217,7 @@ class _MapPageState extends State<MapPage> {
               setState(() {
                 _selectedBuilding = name;
 
-                _buildingVisualRoutesList = [];
+                _buildingVisualRoutes = [];
                 _buildingPoisList = [];
                 _isLoadingBuildingAcessibilities = false;
               });
@@ -340,7 +340,7 @@ class _MapPageState extends State<MapPage> {
           SelectedBuildingBottomSheet(
             selectedBuilding: _selectedBuilding!,
             isLoadingBuildingRoutes: _isLoadingBuildingAcessibilities,
-            buildingVisualRoutesList: _buildingVisualRoutesList,
+            visualRoutes: _buildingVisualRoutes,
             buildingPoisList: _buildingPoisList,
             onDismissed: () => setState(() => _selectedBuilding = null),
           ),
@@ -365,7 +365,7 @@ class _MapPageState extends State<MapPage> {
                       padding: EdgeInsets.all(24.0),
                       child: CircularProgressIndicator(),
                     )
-                  else if (_visualRoutesList.isEmpty)
+                  else if (_allVisualRoutes.isEmpty)
                     const Padding(
                       padding: EdgeInsets.all(24.0),
                       child: Text('Nenhuma rota visual encontrada.'),
@@ -374,9 +374,9 @@ class _MapPageState extends State<MapPage> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _visualRoutesList.length,
+                      itemCount: _allVisualRoutes.length,
                       itemBuilder: (context, index) {
-                        final route = _visualRoutesList[index];
+                        final route = _allVisualRoutes[index];
                         final title = route['title'] ?? 'Sem título';
                         final steps = route['steps'] ?? [];
 
@@ -437,14 +437,14 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
     super.key,
     required this.selectedBuilding,
     required this.isLoadingBuildingRoutes,
-    required this.buildingVisualRoutesList,
+    required this.visualRoutes,
     required this.buildingPoisList,
     required this.onDismissed,
   });
 
   final String selectedBuilding;
   final bool isLoadingBuildingRoutes;
-  final List<dynamic> buildingVisualRoutesList;
+  final List<dynamic> visualRoutes;
   final List<dynamic> buildingPoisList;
   final VoidCallback onDismissed;
 
@@ -463,14 +463,20 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
     }
   }
 
-  String _formatDetailsJson(String? detailsJsonStr) {
-    if (detailsJsonStr == null || detailsJsonStr.isEmpty) return '';
-    try {
-      final Map<String, dynamic> decoded = jsonDecode(detailsJsonStr);
-      return decoded.entries.map((e) => '${e.key}: ${e.value}').join('\n');
-    } catch (e) {
-      return detailsJsonStr;
+  List<String> _formatDetailsJson(String? detailsJsonStr) {
+    if (detailsJsonStr == null || detailsJsonStr.isEmpty) return [];
+
+    List<String> formattedDetails = [];
+    final Map<String, dynamic> decoded = jsonDecode(detailsJsonStr);
+
+    for (final entry in decoded.entries) {
+      if (entry.key == 'has_grab_bars') {
+        formattedDetails.add('Calçada elevada');
+      } else {
+        formattedDetails.add('${entry.key}: ${entry.value}');
+      }
     }
+    return formattedDetails;
   }
 
   @override
@@ -500,13 +506,13 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Text(
                     'Acessibilidade',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -527,12 +533,11 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
                     final detailsJson = poi['detailsJson'];
                     final formattedDetails = _formatDetailsJson(detailsJson);
 
-                    return ListTile(
+                    return ListItem(
+                      title: name,
+                      subtitle: formattedDetails.join(', '),
                       leading: Icon(_getIconForCategory(category)),
-                      title: Text(name),
-                      subtitle: formattedDetails.isNotEmpty
-                          ? Text(formattedDetails)
-                          : null,
+                      leadingBackgroundColor: AppColors.neutral[200]!,
                     );
                   },
                 ),
@@ -540,74 +545,165 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Text(
                     'Rotas Visuais',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              if (buildingVisualRoutesList.isEmpty)
+              if (visualRoutes.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text('Nenhuma rota encontrada.'),
                 )
               else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: buildingVisualRoutesList.length,
-                  itemBuilder: (context, index) {
-                  final route = buildingVisualRoutesList[index];
-                  final title = route['title'] ?? 'Sem título';
-                  final steps = route['steps'] ?? [];
-
-                  String lastImageUrl = '';
-                  if (steps.isNotEmpty) {
-                    final sortedSteps = List<Map<String, dynamic>>.from(steps)
-                      ..sort(
-                        (a, b) => (a['stepOrder'] as int).compareTo(
-                          b['stepOrder'] as int,
-                        ),
-                      );
-                    lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
-                  }
-
-                  final storageBaseUrl = dotenv.env['STORAGE_BASE_URL'] ?? '';
-                  final fullImageUrl = lastImageUrl.isNotEmpty
-                      ? '$storageBaseUrl/$lastImageUrl'
-                      : '';
-
-                  return ListTile(
-                    leading: fullImageUrl.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Image.network(
-                              fullImageUrl,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : const Icon(Icons.image_not_supported),
-                    title: Text(title),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              DynamicVisualRoutePage(routeData: route),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                VisualRoutesList(visualRoutes: visualRoutes),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class VisualRoutesList extends StatelessWidget {
+  const VisualRoutesList({super.key, required this.visualRoutes});
+
+  final List<dynamic> visualRoutes;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: visualRoutes.length,
+      itemBuilder: (context, index) {
+        final route = visualRoutes[index];
+        final title = route['title'] ?? 'Sem título';
+        final steps = route['steps'] ?? [];
+
+        String lastImageUrl = '';
+        if (steps.isNotEmpty) {
+          final sortedSteps = List<Map<String, dynamic>>.from(steps)
+            ..sort(
+              (a, b) =>
+                  (a['stepOrder'] as int).compareTo(b['stepOrder'] as int),
+            );
+          lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
+        }
+
+        final storageBaseUrl = dotenv.env['STORAGE_BASE_URL'] ?? '';
+        final fullImageUrl = lastImageUrl.isNotEmpty
+            ? '$storageBaseUrl/$lastImageUrl'
+            : '';
+
+        return ListItem(
+          title: title,
+          subtitle: '${steps.length} passos',
+          leading: fullImageUrl.isNotEmpty
+              ? SizedBox(
+                  width: double
+                      .infinity, // Standard leading width, or use double.infinity if parent constrains it
+                  height:
+                      double.infinity, // Forces it to fill the vertical space
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.network(fullImageUrl, fit: BoxFit.cover),
+                  ),
+                )
+              : const Icon(Icons.image_not_supported),
+          leadingBackgroundColor: AppColors.neutral[200]!,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DynamicVisualRoutePage(routeData: route),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class ListItem extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Widget? leading;
+  final Color leadingBackgroundColor;
+  final VoidCallback? onTap;
+  final EdgeInsetsGeometry contentPadding;
+
+  const ListItem({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.leading,
+    this.leadingBackgroundColor = const Color(0xFFE8D5F2),
+    this.onTap,
+    this.contentPadding = const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 12,
+    ),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Color(0xFFeeb6a4).withAlpha(40),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: contentPadding,
+          child: Row(
+            children: [
+              // Leading widget (optional)
+              if (leading != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: leadingBackgroundColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(child: leading),
+                  ),
+                ),
+              // Title and subtitle
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF222222),
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
