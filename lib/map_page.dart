@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dynamic_visual_route_page.dart';
 import 'create_visual_route_page.dart';
+import 'create_poi_page.dart';
 import 'dart:convert';
 
 class MapPage extends StatefulWidget {
@@ -143,32 +144,49 @@ class _MapPageState extends State<MapPage> {
       context: context,
       builder: (context) {
         return SizedBox(
-          height: 150,
+          height: 200,
           child: Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 250),
-              child: ListTile(
-                title: Text('Criar rota visual'),
-                subtitle: Text('Envie uma rota visual'),
-                // leading: Icon(Icons.route_rounded),
-                trailing: Icon(Icons.chevron_right_sharp),
-                splashColor: AppColors.neutral[300],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    12,
-                  ), // Clips the splash to these corners
-                ),
-                onTap: () async {
-                  // First, dismiss/close the bottom sheet safely
-                  Navigator.of(context).pop();
-
-                  // Push the new full screen page onto the main view
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const CreateVisualRoutePage(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Text('Criar rota visual'),
+                    subtitle: Text('Envie uma rota visual'),
+                    // leading: Icon(Icons.route_rounded),
+                    trailing: Icon(Icons.chevron_right_sharp),
+                    splashColor: AppColors.neutral[300],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CreateVisualRoutePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Criar Ponto de Acessibilidade'),
+                    subtitle: Text('Cadastre um novo ponto'),
+                    trailing: Icon(Icons.chevron_right_sharp),
+                    splashColor: AppColors.neutral[300],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CreatePoiPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
