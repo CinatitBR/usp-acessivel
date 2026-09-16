@@ -1,15 +1,11 @@
-# Create endpoint to fetch POIs given the buildingId
+# Update "create_poi_page.dart" to follow the visual scheme of "create_visual_route_page.dart".
 
-# Fetch POIs from the backend and show on the building bottom sheet
+- Update the inputs and section titles.
 
-- Create a function to fetch all POIs given the building id
-- Create a new section on the selected building bottom sheet, to show the list of pois (similar to the visual routes).
+# Update selected building bottom sheet list itens
 
-In the widget map_page.dart, update bottom `SelectedBuildingBottomSheet` to show a list of pois associated to the building. You can update the method `_fetchBuildingVisualRoutes` to the name `_fetchBuildingAcessibilities`, and get the pois from `data['pois']`.
-
-Add a new section to the bottom sheet, to show the list of pois. You can add the title to the section as "Acessibilidade". The visual routes list should still be shown, and you can add the title this list as "Rotas Visuais". In the end, `SelectedBuildingBottomSheet` should show the list of visual routes and pois.
-
-Below is th openapi.yaml describing how the data is returned from the endpoint /buildings/{id}/accessibility.
+- Update itens to be inspired by the cbsoft item widget
+- Add chips to show json details for pois
 
 ---
 
