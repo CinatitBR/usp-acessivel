@@ -10,6 +10,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dynamic_visual_route_page.dart';
 import 'create_visual_route_page.dart';
+import 'create_poi_page.dart';
+import 'dart:convert';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -21,8 +23,9 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   String? _selectedBuilding;
 
-  bool _isLoadingBuildingRoutes = false;
+  bool _isLoadingBuildingAcessibilities = false;
   List<dynamic> _buildingVisualRoutesList = [];
+  List<dynamic> _buildingPoisList = [];
   bool _showAllVisualRoutes = false;
   bool _isLoadingRoutes = false;
   List<dynamic> _visualRoutesList = [];
@@ -70,10 +73,11 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Future<void> _fetchBuildingVisualRoutes(String buildingId) async {
+  Future<void> _fetchBuildingAcessibilities(String buildingId) async {
     setState(() {
-      _isLoadingBuildingRoutes = true;
+      _isLoadingBuildingAcessibilities = true;
       _buildingVisualRoutesList = [];
+      _buildingPoisList = [];
     });
 
     try {
@@ -88,15 +92,16 @@ class _MapPageState extends State<MapPage> {
         if (mounted && data != null) {
           setState(() {
             _buildingVisualRoutesList = data['visualRoutes'] ?? [];
+            _buildingPoisList = data['pois'] ?? [];
           });
         }
       }
     } catch (e) {
-      debugPrint('Error fetching building visual routes: $e');
+      debugPrint('Error fetching building accessibilities: $e');
     } finally {
       if (mounted) {
         setState(() {
-          _isLoadingBuildingRoutes = false;
+          _isLoadingBuildingAcessibilities = false;
         });
       }
     }
@@ -139,32 +144,49 @@ class _MapPageState extends State<MapPage> {
       context: context,
       builder: (context) {
         return SizedBox(
-          height: 150,
+          height: 200,
           child: Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 250),
-              child: ListTile(
-                title: Text('Criar rota visual'),
-                subtitle: Text('Envie uma rota visual'),
-                // leading: Icon(Icons.route_rounded),
-                trailing: Icon(Icons.chevron_right_sharp),
-                splashColor: AppColors.neutral[300],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    12,
-                  ), // Clips the splash to these corners
-                ),
-                onTap: () async {
-                  // First, dismiss/close the bottom sheet safely
-                  Navigator.of(context).pop();
-
-                  // Push the new full screen page onto the main view
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const CreateVisualRoutePage(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Text('Criar rota visual'),
+                    subtitle: Text('Envie uma rota visual'),
+                    // leading: Icon(Icons.route_rounded),
+                    trailing: Icon(Icons.chevron_right_sharp),
+                    splashColor: AppColors.neutral[300],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CreateVisualRoutePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Criar Ponto de Acessibilidade'),
+                    subtitle: Text('Cadastre um novo ponto'),
+                    trailing: Icon(Icons.chevron_right_sharp),
+                    splashColor: AppColors.neutral[300],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CreatePoiPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -190,13 +212,14 @@ class _MapPageState extends State<MapPage> {
                 _showAllVisualRoutes = false;
                 _selectedBuilding = building.name;
               });
-              _fetchBuildingVisualRoutes(building.id);
+              _fetchBuildingAcessibilities(building.id);
             } else {
               setState(() {
                 _selectedBuilding = name;
 
                 _buildingVisualRoutesList = [];
-                _isLoadingBuildingRoutes = false;
+                _buildingPoisList = [];
+                _isLoadingBuildingAcessibilities = false;
               });
             }
           },
@@ -231,7 +254,7 @@ class _MapPageState extends State<MapPage> {
                         lon: selection.longitude,
                       );
                     });
-                    _fetchBuildingVisualRoutes(selection.id);
+                    _fetchBuildingAcessibilities(selection.id);
                   },
                   fieldViewBuilder:
                       (
@@ -316,8 +339,9 @@ class _MapPageState extends State<MapPage> {
         if (_selectedBuilding != null)
           SelectedBuildingBottomSheet(
             selectedBuilding: _selectedBuilding!,
-            isLoadingBuildingRoutes: _isLoadingBuildingRoutes,
+            isLoadingBuildingRoutes: _isLoadingBuildingAcessibilities,
             buildingVisualRoutesList: _buildingVisualRoutesList,
+            buildingPoisList: _buildingPoisList,
             onDismissed: () => setState(() => _selectedBuilding = null),
           ),
         if (_showAllVisualRoutes)
@@ -414,13 +438,40 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
     required this.selectedBuilding,
     required this.isLoadingBuildingRoutes,
     required this.buildingVisualRoutesList,
+    required this.buildingPoisList,
     required this.onDismissed,
   });
 
   final String selectedBuilding;
   final bool isLoadingBuildingRoutes;
   final List<dynamic> buildingVisualRoutesList;
+  final List<dynamic> buildingPoisList;
   final VoidCallback onDismissed;
+
+  IconData _getIconForCategory(String? category) {
+    switch (category) {
+      case 'elevator':
+        return Icons.elevator;
+      case 'bathroom':
+        return Icons.wc;
+      case 'ramp':
+        return Icons.accessible;
+      case 'bus':
+        return Icons.directions_bus;
+      default:
+        return Icons.place;
+    }
+  }
+
+  String _formatDetailsJson(String? detailsJsonStr) {
+    if (detailsJsonStr == null || detailsJsonStr.isEmpty) return '';
+    try {
+      final Map<String, dynamic> decoded = jsonDecode(detailsJsonStr);
+      return decoded.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+    } catch (e) {
+      return detailsJsonStr;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -445,19 +496,71 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
                 padding: EdgeInsets.all(24.0),
                 child: CircularProgressIndicator(),
               )
-            else if (buildingVisualRoutesList.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Text(
-                  'Nenhuma rota visual encontrada para este edifício.',
+            else ...[
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'Acessibilidade',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: buildingVisualRoutesList.length,
-                itemBuilder: (context, index) {
+              ),
+              if (buildingPoisList.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('Nenhum ponto de acessibilidade encontrado.'),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: buildingPoisList.length,
+                  itemBuilder: (context, index) {
+                    final poi = buildingPoisList[index];
+                    final name = poi['name'] ?? 'Sem nome';
+                    final category = poi['category'];
+                    final detailsJson = poi['detailsJson'];
+                    final formattedDetails = _formatDetailsJson(detailsJson);
+
+                    return ListTile(
+                      leading: Icon(_getIconForCategory(category)),
+                      title: Text(name),
+                      subtitle: formattedDetails.isNotEmpty
+                          ? Text(formattedDetails)
+                          : null,
+                    );
+                  },
+                ),
+              const SizedBox(height: 16),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'Rotas Visuais',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              if (buildingVisualRoutesList.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('Nenhuma rota encontrada.'),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: buildingVisualRoutesList.length,
+                  itemBuilder: (context, index) {
                   final route = buildingVisualRoutesList[index];
                   final title = route['title'] ?? 'Sem título';
                   final steps = route['steps'] ?? [];
@@ -503,6 +606,7 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
                   );
                 },
               ),
+            ],
           ],
         ),
       ),
