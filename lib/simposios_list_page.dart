@@ -2,79 +2,20 @@ import 'package:flutter/material.dart';
 import 'event_list_item.dart';
 import 'simposio_model.dart';
 
-// // Example 1: With custom leading widgets per simposio
-// class SimposiosListWithLeadingExample extends StatelessWidget {
-//   const SimposiosListWithLeadingExample({super.key});
-
-//   // Map of simposio IDs to their colors and icons
-//   static const simposioColors = {
-//     'sbes': Color(0xFFE8D5F2), // Purple
-//     'sblp': Color(0xFFD5E8F2), // Blue
-//     'sbcars': Color(0xFFE8F2D5), // Green
-//     'sast': Color(0xFFF2E8D5), // Orange
-//   };
-
-//   static const simposioIcons = {
-//     'sbes': Icons.engineering,
-//     'sblp': Icons.code,
-//     'sbcars': Icons.architecture,
-//     'sast': Icons.bug_report,
-//   };
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Simpósios')),
-//       body: FutureBuilder<List<Simposio>>(
-//         future: loadSimposios(),
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return const Center(child: CircularProgressIndicator());
-//           }
-
-//           if (snapshot.hasError) {
-//             return Center(child: Text('Erro: ${snapshot.error}'));
-//           }
-
-//           final simposios = snapshot.data ?? [];
-
-//           return ListView.separated(
-//             itemCount: simposios.length,
-//             separatorBuilder: (_, __) => const Divider(),
-//             itemBuilder: (context, index) {
-//               final simposio = simposios[index];
-//               final color = simposioColors[simposio.id] ?? Colors.grey;
-//               final icon = simposioIcons[simposio.id] ?? Icons.event;
-
-//               return EventListItem(
-//                 title: simposio.title,
-//                 subtitle: simposio.classroom,
-//                 leading: Icon(icon, size: 40, color: Colors.grey[600]),
-//                 leadingBackgroundColor: color,
-//                 onTap: () {
-//                   ScaffoldMessenger.of(context).showSnackBar(
-//                     SnackBar(content: Text('${simposio.title} selected')),
-//                   );
-//                 },
-//               );
-//             },
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
+import 'dynamic_visual_route_page.dart';
 
 // Example 2: With search/filter functionality
-class SimposiosListWithFilter extends StatefulWidget {
-  const SimposiosListWithFilter({super.key});
+class SimposiosList extends StatefulWidget {
+  const SimposiosList({super.key, this.onTap, required this.visualRoutes});
+
+  final List<dynamic> visualRoutes;
+  final VoidCallback? onTap;
 
   @override
-  State<SimposiosListWithFilter> createState() =>
-      _SimposiosListWithFilterState();
+  State<SimposiosList> createState() => _SimposiosListState();
 }
 
-class _SimposiosListWithFilterState extends State<SimposiosListWithFilter> {
+class _SimposiosListState extends State<SimposiosList> {
   late Future<List<Simposio>> _simposiosFuture;
   String _searchQuery = '';
 
@@ -154,6 +95,17 @@ class _SimposiosListWithFilterState extends State<SimposiosListWithFilter> {
                     subtitle: simposio.classroom,
                     onTap: () {
                       print('Selected: ${simposio.id}');
+                      widget.onTap?.call();
+
+                      if (widget.visualRoutes.isNotEmpty) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => DynamicVisualRoutePage(
+                              routeData: widget.visualRoutes.first,
+                            ),
+                          ),
+                        );
+                      }
                     },
                   );
                 },
