@@ -23,7 +23,7 @@ class _MapPageState extends State<MapPage> {
 
   bool _isLoadingBuildingRoutes = false;
   List<dynamic> _buildingVisualRoutesList = [];
-  bool _showVisualRoutes = false;
+  bool _showAllVisualRoutes = false;
   bool _isLoadingRoutes = false;
   List<dynamic> _visualRoutesList = [];
   Geographic? _targetCenter;
@@ -102,7 +102,7 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  Future<void> _fetchVisualRoutes() async {
+  Future<void> _fetchAllVisualRoutes() async {
     setState(() {
       _isLoadingRoutes = true;
       _visualRoutesList = [];
@@ -187,7 +187,7 @@ class _MapPageState extends State<MapPage> {
             );
             if (building != null) {
               setState(() {
-                _showVisualRoutes = false;
+                _showAllVisualRoutes = false;
                 _selectedBuilding = building.name;
               });
               _fetchBuildingVisualRoutes(building.id);
@@ -223,7 +223,7 @@ class _MapPageState extends State<MapPage> {
                     FocusScope.of(context).unfocus();
 
                     setState(() {
-                      _showVisualRoutes = false;
+                      _showAllVisualRoutes = false;
                       _selectedBuilding = selection.name;
 
                       _targetCenter = Geographic(
@@ -282,9 +282,9 @@ class _MapPageState extends State<MapPage> {
                       onPressed: () {
                         setState(() {
                           _selectedBuilding = null;
-                          _showVisualRoutes = true;
+                          _showAllVisualRoutes = true;
                         });
-                        _fetchVisualRoutes();
+                        _fetchAllVisualRoutes();
                       },
                       icon: Icon(Icons.visibility_outlined),
                       label: const Text('Rotas visuais'),
@@ -314,93 +314,15 @@ class _MapPageState extends State<MapPage> {
           ),
         ),
         if (_selectedBuilding != null)
-          AppBottomSheet(
+          SelectedBuildingBottomSheet(
+            selectedBuilding: _selectedBuilding!,
+            isLoadingBuildingRoutes: _isLoadingBuildingRoutes,
+            buildingVisualRoutesList: _buildingVisualRoutesList,
             onDismissed: () => setState(() => _selectedBuilding = null),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                children: [
-                  Text(
-                    _selectedBuilding ?? '',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.primary[600],
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_isLoadingBuildingRoutes)
-                    const Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: CircularProgressIndicator(),
-                    )
-                  else if (_buildingVisualRoutesList.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Text(
-                        'Nenhuma rota visual encontrada para este edifício.',
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _buildingVisualRoutesList.length,
-                      itemBuilder: (context, index) {
-                        final route = _buildingVisualRoutesList[index];
-                        final title = route['title'] ?? 'Sem título';
-                        final steps = route['steps'] ?? [];
-
-                        String lastImageUrl = '';
-                        if (steps.isNotEmpty) {
-                          final sortedSteps =
-                              List<Map<String, dynamic>>.from(steps)..sort(
-                                (a, b) => (a['stepOrder'] as int).compareTo(
-                                  b['stepOrder'] as int,
-                                ),
-                              );
-                          lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
-                        }
-
-                        final storageBaseUrl =
-                            dotenv.env['STORAGE_BASE_URL'] ?? '';
-                        final fullImageUrl = lastImageUrl.isNotEmpty
-                            ? '$storageBaseUrl/$lastImageUrl'
-                            : '';
-
-                        return ListTile(
-                          leading: fullImageUrl.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Image.network(
-                                    fullImageUrl,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : const Icon(Icons.image_not_supported),
-                          title: Text(title),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DynamicVisualRoutePage(routeData: route),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
           ),
-        if (_showVisualRoutes)
+        if (_showAllVisualRoutes)
           AppBottomSheet(
-            onDismissed: () => setState(() => _showVisualRoutes = false),
+            onDismissed: () => setState(() => _showAllVisualRoutes = false),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
@@ -482,6 +404,108 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
       ],
+    );
+  }
+}
+
+class SelectedBuildingBottomSheet extends StatelessWidget {
+  const SelectedBuildingBottomSheet({
+    super.key,
+    required this.selectedBuilding,
+    required this.isLoadingBuildingRoutes,
+    required this.buildingVisualRoutesList,
+    required this.onDismissed,
+  });
+
+  final String selectedBuilding;
+  final bool isLoadingBuildingRoutes;
+  final List<dynamic> buildingVisualRoutesList;
+  final VoidCallback onDismissed;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBottomSheet(
+      onDismissed: onDismissed,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Column(
+          children: [
+            Text(
+              selectedBuilding,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                color: AppColors.primary[600],
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (isLoadingBuildingRoutes)
+              const Padding(
+                padding: EdgeInsets.all(24.0),
+                child: CircularProgressIndicator(),
+              )
+            else if (buildingVisualRoutesList.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text(
+                  'Nenhuma rota visual encontrada para este edifício.',
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: buildingVisualRoutesList.length,
+                itemBuilder: (context, index) {
+                  final route = buildingVisualRoutesList[index];
+                  final title = route['title'] ?? 'Sem título';
+                  final steps = route['steps'] ?? [];
+
+                  String lastImageUrl = '';
+                  if (steps.isNotEmpty) {
+                    final sortedSteps = List<Map<String, dynamic>>.from(steps)
+                      ..sort(
+                        (a, b) => (a['stepOrder'] as int).compareTo(
+                          b['stepOrder'] as int,
+                        ),
+                      );
+                    lastImageUrl = sortedSteps.last['imageUrl'] ?? '';
+                  }
+
+                  final storageBaseUrl = dotenv.env['STORAGE_BASE_URL'] ?? '';
+                  final fullImageUrl = lastImageUrl.isNotEmpty
+                      ? '$storageBaseUrl/$lastImageUrl'
+                      : '';
+
+                  return ListTile(
+                    leading: fullImageUrl.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              fullImageUrl,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : const Icon(Icons.image_not_supported),
+                    title: Text(title),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DynamicVisualRoutePage(routeData: route),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
