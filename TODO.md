@@ -1,26 +1,17 @@
-## Create Visual Route: send data to backend
+# Create endpoint to fetch POIs given the buildingId
 
-- Fix 404 bug: fixed, I had forgotten to "npx wrangler deploy"
-- On route save: disable button, show loading screen.
+# Fetch POIs from the backend and show on the building bottom sheet
 
-- Add buildings: id and name to the dropdown.
-- Make required: title, building.
-- Save form data in the appropriate format (following the endpoint multipart/form-data)
+- Create a function to fetch all POIs given the building id
+- Create a new section on the selected building bottom sheet, to show the list of pois (similar to the visual routes).
 
-## Add server data to screen
+In the widget map_page.dart, update bottom `SelectedBuildingBottomSheet` to show a list of pois associated to the building. You can update the method `_fetchBuildingVisualRoutes` to the name `_fetchBuildingAcessibilities`, and get the pois from `data['pois']`.
 
-- Fetch buildings from the server
-- Show buildings on the dropdown in the CreateVisualRoutePage
+Add a new section to the bottom sheet, to show the list of pois. You can add the title to the section as "Acessibilidade". The visual routes list should still be shown, and you can add the title this list as "Rotas Visuais". In the end, `SelectedBuildingBottomSheet` should show the list of visual routes and pois.
+
+Below is th openapi.yaml describing how the data is returned from the endpoint /buildings/{id}/accessibility.
 
 ---
-
-## Create page for visual route
-
-- Add visual route for FFLCH
-
-### Fazer
-
-- Exibir os nomes dos institutos em uma lista.
 
 new: com.github.cinatitbr.usp_acessivel
 old: com.example.meu_campus_flutter
