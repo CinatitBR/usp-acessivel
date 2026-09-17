@@ -164,7 +164,7 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
       'category': _category,
       'lat': _lat,
       'lon': _lon,
-      'createdBy': 'user_anon',
+      // 'createdBy': 'user_anon',
       'detailsJson': jsonEncode(details),
     };
 
