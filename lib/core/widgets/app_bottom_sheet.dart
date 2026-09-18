@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:usp_acessivel/core/theme/app_colors.dart';
 
 class AppBottomSheet extends StatefulWidget {
   const AppBottomSheet({

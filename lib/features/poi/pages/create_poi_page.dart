@@ -1,11 +1,14 @@
+import 'package:usp_acessivel/features/poi/services/poi_service.dart';
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+
 import 'package:geolocator/geolocator.dart';
-import 'app_colors.dart';
-import 'building_repository.dart';
+import 'package:usp_acessivel/core/theme/app_colors.dart';
+import 'package:usp_acessivel/features/map/models/building_model.dart';
+import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
 
 class CreatePoiPage extends StatefulWidget {
   const CreatePoiPage({super.key});
@@ -173,21 +176,16 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
     }
 
     try {
-      final dio = Dio();
-      final baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8787';
-      final response = await dio.post('$baseUrl/pois', data: data);
+      final poiService = PoiService();
+      await poiService.createPoi(data);
 
-      if (response.statusCode == 201 && response.data['success'] == true) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ponto de Acessibilidade criado com sucesso!'),
-            ),
-          );
-          Navigator.of(context).pop();
-        }
-      } else {
-        throw Exception('Failed to create POI');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ponto de Acessibilidade criado com sucesso!'),
+          ),
+        );
+        Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {

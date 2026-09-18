@@ -1,24 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// Parse usp_buildings.geojson to extract id and name of buildings, and cache the result to be used
-// across the app lifecycle.
-
-class Building {
-  final String id;
-  final String name;
-  final double longitude;
-  final double latitude;
-
-  Building({
-    required this.id,
-    required this.name,
-    required this.longitude,
-    required this.latitude,
-  });
-}
+import '../models/building_model.dart';
 
 class BuildingRepository {
   // Singleton pattern

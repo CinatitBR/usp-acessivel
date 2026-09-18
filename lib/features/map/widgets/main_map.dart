@@ -4,8 +4,8 @@ import 'package:collection/collection.dart';
 
 import 'package:maplibre/maplibre.dart';
 
-import 'package:usp_acessivel/app_colors.dart';
-import './utils.dart';
+import 'package:usp_acessivel/core/theme/app_colors.dart';
+import 'package:usp_acessivel/core/utils/utils.dart';
 
 class MainMap extends StatefulWidget {
   const MainMap({
