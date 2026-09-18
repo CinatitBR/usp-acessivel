@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:geolocator/geolocator.dart';
 import 'app_colors.dart';
 import 'building_repository.dart';
 
@@ -22,6 +23,8 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
   double _lon = -46.730815;
   String? _selectedBuildingId;
   bool _isLoading = false;
+  bool _isLoadingLocation = true;
+  bool _locationError = false;
 
   List<Building> _buildingEntries = [];
 
@@ -50,6 +53,70 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
   void initState() {
     super.initState();
     _loadBuildings();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        setState(() {
+          _locationError = true;
+          _isLoadingLocation = false;
+        });
+      }
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          setState(() {
+            _locationError = true;
+            _isLoadingLocation = false;
+          });
+        }
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) {
+        setState(() {
+          _locationError = true;
+          _isLoadingLocation = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          _lat = position.latitude;
+          _lon = position.longitude;
+          _locationError = false;
+          _isLoadingLocation = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _locationError = true;
+          _isLoadingLocation = false;
+        });
+      }
+    }
   }
 
   @override
@@ -97,7 +164,7 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
       'category': _category,
       'lat': _lat,
       'lon': _lon,
-      'createdBy': 'user_anon',
+      // 'createdBy': 'user_anon',
       'detailsJson': jsonEncode(details),
     };
 
@@ -175,49 +242,76 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
                 },
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Latitude *',
-                      ),
-                      initialValue: _lat.toString(),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Campo obrigatório';
-                        if (double.tryParse(value) == null)
-                          return 'Número inválido';
-                        return null;
-                      },
-                      onSaved: (value) => _lat = double.parse(value!),
-                    ),
+              if (_isLoadingLocation)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: CircularProgressIndicator(),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Longitude *',
-                      ),
-                      initialValue: _lon.toString(),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Campo obrigatório';
-                        if (double.tryParse(value) == null)
-                          return 'Número inválido';
-                        return null;
-                      },
-                      onSaved: (value) => _lon = double.parse(value!),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            key: ValueKey('lat_$_lat'),
+                            decoration: const InputDecoration(
+                              labelText: 'Latitude *',
+                            ),
+                            initialValue: _lat.toString(),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Campo obrigatório';
+                              }
+                              if (double.tryParse(value) == null) {
+                                return 'Número inválido';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) => _lat = double.parse(value!),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextFormField(
+                            key: ValueKey('lon_$_lon'),
+                            decoration: const InputDecoration(
+                              labelText: 'Longitude *',
+                            ),
+                            initialValue: _lon.toString(),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Campo obrigatório';
+                              }
+                              if (double.tryParse(value) == null) {
+                                return 'Número inválido';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) => _lon = double.parse(value!),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
+                    if (_locationError)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'Não foi possível obter sua localização atual',
+                          style: TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      ),
+                  ],
+                ),
               const SizedBox(height: 16),
               Autocomplete<Building>(
                 displayStringForOption: (Building option) => option.name,
