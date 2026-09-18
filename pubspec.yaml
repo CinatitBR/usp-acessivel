@@ -14,6 +14,7 @@ dependencies:
     sdk: flutter
   flutter_dotenv: ^6.0.1
   flutter_image_compress: ^2.5.1
+  flutter_svg: ^2.3.0
   image_picker: ^1.2.3
   maplibre: ^0.3.5
   path: ^1.9.1
@@ -31,6 +32,7 @@ flutter:
         - asset: fonts/Manrope-VariableFont_wght.ttf
   assets:
     - data/
+    - assets/icons/
     - assets/tiles/
     - assets/rotas-odonto/
     - assets/map-icons/
