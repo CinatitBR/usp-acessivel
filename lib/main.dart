@@ -82,13 +82,31 @@ class MainApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Manrope',
         textTheme: textTheme,
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: Color(0xFF737373),
-          selectedLabelStyle: textTheme.labelMedium,
-          unselectedLabelStyle: textTheme.labelMedium,
-          selectedIconTheme: IconThemeData(size: 28),
-          unselectedIconTheme: IconThemeData(size: 28),
+        navigationBarTheme: NavigationBarThemeData(
+          // 1. Configure the item label text styles
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return textTheme.bodyMedium?.copyWith(
+                color: AppColors.primary,
+                fontWeight: .w600,
+              );
+            }
+            return textTheme.bodyMedium?.copyWith(
+              color: AppColors.neutral[500],
+            );
+          }),
+
+          // 2. Configure the icon themes (Size and Color)
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const IconThemeData(size: 28, color: AppColors.primary);
+            }
+            return IconThemeData(size: 28, color: AppColors.neutral[500]);
+          }),
+
+          // 3. Optional: Customize the animated selection pill container background
+          // Change to Colors.transparent if you want to remove the pill effect completely
+          indicatorColor: AppColors.primary.withValues(alpha: 0.12),
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
@@ -113,31 +131,25 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  // 2. Ordered list of pages matching the bottom taskbar indexes
   final List<Widget> _pages = [MapPage(), InstitutesPage()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 3. IndexedStack keeps all tab states alive in memory
-      // without destroying/rebuilding them when you switch tabs
       body: SafeArea(
         child: IndexedStack(index: _currentIndex, children: _pages),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          // 4. Update the index locally instead of using Navigator.pushNamed
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        backgroundColor: AppColors.neutral[50],
+        onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(label: 'Explorar', icon: Icon(Icons.explore)),
-          BottomNavigationBarItem(
-            label: 'Institutos',
-            icon: Icon(Icons.school),
-          ),
+        destinations: const [
+          NavigationDestination(label: 'Explorar', icon: Icon(Icons.explore)),
+          NavigationDestination(label: 'Institutos', icon: Icon(Icons.school)),
         ],
       ),
     );

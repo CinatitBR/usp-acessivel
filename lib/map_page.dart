@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:maplibre/maplibre.dart';
 import 'building_repository.dart';
 
@@ -229,8 +230,7 @@ class _MapPageState extends State<MapPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Autocomplete<Building>(
-                  displayStringForOption: (Building option) => option.name,
+                MapSearchBar(
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     if (textEditingValue.text.isEmpty) {
                       return const Iterable<Building>.empty();
@@ -256,48 +256,6 @@ class _MapPageState extends State<MapPage> {
                     });
                     _fetchBuildingAcessibilities(selection.id);
                   },
-                  fieldViewBuilder:
-                      (
-                        BuildContext context,
-                        TextEditingController fieldTextEditingController,
-                        FocusNode fieldFocusNode,
-                        VoidCallback onFieldSubmitted,
-                      ) {
-                        return TextField(
-                          controller: fieldTextEditingController,
-                          focusNode: fieldFocusNode,
-                          decoration: InputDecoration(
-                            hintText: 'Buscar edifício',
-                            hintStyle: TextStyle(color: AppColors.neutral[400]),
-                            filled: true,
-                            fillColor: Colors.white,
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: AppColors.neutral[400],
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: AppColors.neutral[200]!,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: AppColors.neutral[200]!,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.primary),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                          ),
-                        );
-                      },
                 ),
                 Row(
                   children: [
@@ -329,11 +287,26 @@ class _MapPageState extends State<MapPage> {
         Positioned(
           right: 24,
           bottom: 24,
-          child: FloatingActionButton(
+          child: IconButton(
+            icon: DecoratedBox(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26, // 👈 Shadow color with transparency
+                    blurRadius: 4.0, // 👈 Softens the shadow
+                    offset: Offset(0, 4), // 👈 Moves shadow downwards (X, Y)
+                  ),
+                ],
+              ),
+              child: SvgPicture.asset(
+                'assets/icons/community-report.svg',
+                width: 60,
+              ),
+            ),
             onPressed: () {
               _handleActionButtonClick(context);
             },
-            child: Icon(Icons.add, size: 32),
           ),
         ),
         if (_selectedBuilding != null)
@@ -341,7 +314,7 @@ class _MapPageState extends State<MapPage> {
             selectedBuilding: _selectedBuilding!,
             isLoadingBuildingRoutes: _isLoadingBuildingAcessibilities,
             visualRoutes: _buildingVisualRoutes,
-            buildingPoisList: _buildingPoisList,
+            accessibilities: _buildingPoisList,
             onDismissed: () => setState(() => _selectedBuilding = null),
           ),
         if (_showAllVisualRoutes)
@@ -432,36 +405,163 @@ class _MapPageState extends State<MapPage> {
   }
 }
 
+class MapSearchBar extends StatelessWidget {
+  final AutocompleteOptionsBuilder<Building> optionsBuilder;
+  final AutocompleteOnSelected<Building> onSelected;
+  final VoidCallback? onClear; // Callback to handle clearing parent state
+
+  const MapSearchBar({
+    super.key,
+    required this.optionsBuilder,
+    required this.onSelected,
+    this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<Building>(
+      displayStringForOption: (Building option) => option.name,
+      optionsBuilder: optionsBuilder, // Passed from parent
+      onSelected: onSelected, // Passed from parent
+      fieldViewBuilder:
+          (context, textEditingController, focusNode, onFieldSubmitted) {
+            return ListenableBuilder(
+              listenable: textEditingController,
+              builder: (context, child) {
+                final hasText = textEditingController.text.isNotEmpty;
+                return TextField(
+                  controller: textEditingController,
+                  focusNode: focusNode,
+                  onSubmitted: (value) => onFieldSubmitted(),
+                  decoration: InputDecoration(
+                    hintText: 'Buscar edifício',
+                    hintStyle: TextStyle(color: AppColors.neutral[400]),
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: AppColors.neutral[400],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      borderSide: BorderSide(color: AppColors.neutral[200]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      borderSide: BorderSide(color: AppColors.neutral[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      borderSide: const BorderSide(color: AppColors.primary),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    suffixIcon: hasText
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: AppColors.neutral[500],
+                            ),
+                            onPressed: () {
+                              textEditingController.clear();
+                              if (onClear != null) {
+                                onClear!(); // Triggers state reset in parent
+                              }
+                            },
+                          )
+                        : null,
+                  ),
+                );
+              },
+            );
+          },
+    );
+  }
+}
+
 class SelectedBuildingBottomSheet extends StatelessWidget {
   const SelectedBuildingBottomSheet({
     super.key,
     required this.selectedBuilding,
     required this.isLoadingBuildingRoutes,
     required this.visualRoutes,
-    required this.buildingPoisList,
+    required this.accessibilities,
     required this.onDismissed,
   });
 
   final String selectedBuilding;
   final bool isLoadingBuildingRoutes;
   final List<dynamic> visualRoutes;
-  final List<dynamic> buildingPoisList;
+  final List<dynamic> accessibilities;
   final VoidCallback onDismissed;
 
-  IconData _getIconForCategory(String? category) {
-    switch (category) {
-      case 'elevator':
-        return Icons.elevator;
-      case 'bathroom':
-        return Icons.wc;
-      case 'ramp':
-        return Icons.accessible;
-      case 'bus':
-        return Icons.directions_bus;
-      default:
-        return Icons.place;
-    }
+  @override
+  Widget build(BuildContext context) {
+    return AppBottomSheet(
+      onDismissed: onDismissed,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Column(
+            children: [
+              Text(
+                selectedBuilding,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppColors.primary[600],
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (isLoadingBuildingRoutes)
+                CircularProgressIndicator()
+              else ...[
+                const ListHeader(title: 'Acessibilidade'),
+                BuildingAccessibilitiesList(accessibilities: accessibilities),
+                const SizedBox(height: 16),
+                ListHeader(title: 'Rotas Visuais'),
+                BuildingVisualRoutesList(visualRoutes: visualRoutes),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
+}
+
+class ListHeader extends StatelessWidget {
+  const ListHeader({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColors.neutral[800],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BuildingAccessibilitiesList extends StatelessWidget {
+  const BuildingAccessibilitiesList({super.key, required this.accessibilities});
+
+  final List<dynamic> accessibilities;
 
   List<String> _formatDetailsJson(String? detailsJsonStr) {
     if (detailsJsonStr == null || detailsJsonStr.isEmpty) return [];
@@ -479,108 +579,76 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
     return formattedDetails;
   }
 
+  IconData _getIconForCategory(String? category) {
+    switch (category) {
+      case 'elevator':
+        return Icons.elevator_outlined;
+      case 'bathroom':
+        return Icons.wc;
+      case 'ramp':
+        return Icons.accessible;
+      case 'bus':
+        return Icons.directions_bus;
+      default:
+        return Icons.place;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AppBottomSheet(
-      onDismissed: onDismissed,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Column(
-          children: [
-            Text(
-              selectedBuilding,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: AppColors.primary[600],
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (isLoadingBuildingRoutes)
-              const Padding(
-                padding: EdgeInsets.all(24.0),
-                child: CircularProgressIndicator(),
-              )
-            else ...[
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: Text(
-                    'Acessibilidade',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              if (buildingPoisList.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('Nenhum ponto de acessibilidade encontrado.'),
-                )
-              else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: buildingPoisList.length,
-                  itemBuilder: (context, index) {
-                    final poi = buildingPoisList[index];
-                    final name = poi['name'] ?? 'Sem nome';
-                    final category = poi['category'];
-                    final detailsJson = poi['detailsJson'];
-                    final formattedDetails = _formatDetailsJson(detailsJson);
+    if (accessibilities.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text('Nenhum ponto de acessibilidade encontrado.'),
+      );
+    }
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: accessibilities.length,
+      separatorBuilder: (context, index) {
+        return const SizedBox(height: 4); // Use width for horizontal lists
+      },
+      itemBuilder: (context, index) {
+        final poi = accessibilities[index];
+        final name = poi['name'] ?? 'Sem nome';
+        final category = poi['category'];
+        final detailsJson = poi['detailsJson'];
+        final formattedDetails = _formatDetailsJson(detailsJson);
 
-                    return ListItem(
-                      title: name,
-                      subtitle: formattedDetails.join(', '),
-                      leading: Icon(_getIconForCategory(category)),
-                      leadingBackgroundColor: AppColors.neutral[200]!,
-                    );
-                  },
-                ),
-              const SizedBox(height: 16),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: Text(
-                    'Rotas Visuais',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              if (visualRoutes.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('Nenhuma rota encontrada.'),
-                )
-              else
-                VisualRoutesList(visualRoutes: visualRoutes),
-            ],
-          ],
-        ),
-      ),
+        return ListItem(
+          title: name,
+          subtitle: formattedDetails.join(', '),
+          leading: Icon(
+            _getIconForCategory(category),
+            color: AppColors.primary[500],
+          ),
+        );
+      },
     );
   }
 }
 
-class VisualRoutesList extends StatelessWidget {
-  const VisualRoutesList({super.key, required this.visualRoutes});
+class BuildingVisualRoutesList extends StatelessWidget {
+  const BuildingVisualRoutesList({super.key, required this.visualRoutes});
 
   final List<dynamic> visualRoutes;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    if (visualRoutes.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text('Nenhuma rota encontrada.'),
+      );
+    }
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: visualRoutes.length,
+      separatorBuilder: (context, index) {
+        return const SizedBox(height: 4); // Use width for horizontal lists
+      },
       itemBuilder: (context, index) {
         final route = visualRoutes[index];
         final title = route['title'] ?? 'Sem título';
@@ -643,7 +711,7 @@ class ListItem extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.leading,
-    this.leadingBackgroundColor = const Color(0xFFE8D5F2),
+    this.leadingBackgroundColor = AppColors.primary100,
     this.onTap,
     this.contentPadding = const EdgeInsets.symmetric(
       horizontal: 16,
@@ -653,56 +721,66 @@ class ListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Color(0xFFeeb6a4).withAlpha(40),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: contentPadding,
-          child: Row(
-            children: [
-              // Leading widget (optional)
-              if (leading != null)
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: leadingBackgroundColor,
-                      borderRadius: BorderRadius.circular(16),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(
+            0xFFE2E8F0,
+          ).withValues(alpha: 0.8), // #E2E8F0 at 80% opacity
+          width: 1.0, // 1px stroke
+        ),
+      ),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip
+            .antiAlias, // Clips the Material background cleanly inside the border
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: contentPadding,
+            child: Row(
+              children: [
+                // Leading widget (optional)
+                if (leading != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: leadingBackgroundColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(child: leading),
                     ),
-                    child: Center(child: leading),
+                  ),
+                // Title and subtitle
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.neutral[800],
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(color: AppColors.neutral[500]),
+                      ),
+                    ],
                   ),
                 ),
-              // Title and subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF222222),
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

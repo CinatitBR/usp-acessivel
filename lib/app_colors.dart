@@ -5,11 +5,12 @@ abstract final class AppColors {
   // Primary Palette
   // ==========================================
   static const int _primaryValue = 0xFF1E5AE8;
+  static const Color primary100 = Color(0xFFDCE8FF);
 
   static const MaterialColor primary =
       MaterialColor(_primaryValue, <int, Color>{
         50: Color(0xFFECF3FF),
-        100: Color(0xFFDCE8FF),
+        100: primary100,
         200: Color(0xFFC3D9FF),
         300: Color(0xFF8CB3FF),
         400: Color(0xFF5F8EF4),
