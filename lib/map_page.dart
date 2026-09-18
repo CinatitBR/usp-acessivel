@@ -230,8 +230,7 @@ class _MapPageState extends State<MapPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Autocomplete<Building>(
-                  displayStringForOption: (Building option) => option.name,
+                MapSearchBar(
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     if (textEditingValue.text.isEmpty) {
                       return const Iterable<Building>.empty();
@@ -257,77 +256,6 @@ class _MapPageState extends State<MapPage> {
                     });
                     _fetchBuildingAcessibilities(selection.id);
                   },
-                  fieldViewBuilder:
-                      (
-                        context,
-                        textEditingController,
-                        focusNode,
-                        onFieldSubmitted,
-                      ) {
-                        return ListenableBuilder(
-                          listenable: textEditingController,
-                          builder: (context, child) {
-                            final hasText =
-                                textEditingController.text.isNotEmpty;
-                            return TextField(
-                              controller: textEditingController,
-                              focusNode: focusNode,
-                              onSubmitted: (value) => onFieldSubmitted(),
-                              decoration: InputDecoration(
-                                hintText: 'Buscar edifício',
-                                hintStyle: TextStyle(
-                                  color: AppColors.neutral[400],
-                                ),
-                                filled: true,
-                                fillColor: Colors.white,
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: AppColors.neutral[400],
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                  borderSide: BorderSide(
-                                    color: AppColors.neutral[200]!,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                  borderSide: BorderSide(
-                                    color: AppColors.neutral[200]!,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                  borderSide: BorderSide(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                // Dynamically displays clear button only if text length > 0
-                                suffixIcon: hasText
-                                    ? IconButton(
-                                        icon: Icon(
-                                          Icons.clear,
-                                          color: AppColors.neutral[500],
-                                        ),
-                                        onPressed: () {
-                                          textEditingController.clear();
-                                          setState(() {
-                                            _selectedBuilding = null;
-                                            _buildingVisualRoutes = [];
-                                            _buildingPoisList = [];
-                                          });
-                                        },
-                                      )
-                                    : null,
-                              ),
-                            );
-                          },
-                        );
-                      },
                 ),
                 Row(
                   children: [
@@ -386,7 +314,7 @@ class _MapPageState extends State<MapPage> {
             selectedBuilding: _selectedBuilding!,
             isLoadingBuildingRoutes: _isLoadingBuildingAcessibilities,
             visualRoutes: _buildingVisualRoutes,
-            buildingPoisList: _buildingPoisList,
+            accessibilities: _buildingPoisList,
             onDismissed: () => setState(() => _selectedBuilding = null),
           ),
         if (_showAllVisualRoutes)
@@ -477,52 +405,97 @@ class _MapPageState extends State<MapPage> {
   }
 }
 
+class MapSearchBar extends StatelessWidget {
+  final AutocompleteOptionsBuilder<Building> optionsBuilder;
+  final AutocompleteOnSelected<Building> onSelected;
+  final VoidCallback? onClear; // Callback to handle clearing parent state
+
+  const MapSearchBar({
+    super.key,
+    required this.optionsBuilder,
+    required this.onSelected,
+    this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<Building>(
+      displayStringForOption: (Building option) => option.name,
+      optionsBuilder: optionsBuilder, // Passed from parent
+      onSelected: onSelected, // Passed from parent
+      fieldViewBuilder:
+          (context, textEditingController, focusNode, onFieldSubmitted) {
+            return ListenableBuilder(
+              listenable: textEditingController,
+              builder: (context, child) {
+                final hasText = textEditingController.text.isNotEmpty;
+                return TextField(
+                  controller: textEditingController,
+                  focusNode: focusNode,
+                  onSubmitted: (value) => onFieldSubmitted(),
+                  decoration: InputDecoration(
+                    hintText: 'Buscar edifício',
+                    hintStyle: TextStyle(color: AppColors.neutral[400]),
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: AppColors.neutral[400],
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      borderSide: BorderSide(color: AppColors.neutral[200]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      borderSide: BorderSide(color: AppColors.neutral[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      borderSide: const BorderSide(color: AppColors.primary),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    suffixIcon: hasText
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: AppColors.neutral[500],
+                            ),
+                            onPressed: () {
+                              textEditingController.clear();
+                              if (onClear != null) {
+                                onClear!(); // Triggers state reset in parent
+                              }
+                            },
+                          )
+                        : null,
+                  ),
+                );
+              },
+            );
+          },
+    );
+  }
+}
+
 class SelectedBuildingBottomSheet extends StatelessWidget {
   const SelectedBuildingBottomSheet({
     super.key,
     required this.selectedBuilding,
     required this.isLoadingBuildingRoutes,
     required this.visualRoutes,
-    required this.buildingPoisList,
+    required this.accessibilities,
     required this.onDismissed,
   });
 
   final String selectedBuilding;
   final bool isLoadingBuildingRoutes;
   final List<dynamic> visualRoutes;
-  final List<dynamic> buildingPoisList;
+  final List<dynamic> accessibilities;
   final VoidCallback onDismissed;
-
-  IconData _getIconForCategory(String? category) {
-    switch (category) {
-      case 'elevator':
-        return Icons.elevator_outlined;
-      case 'bathroom':
-        return Icons.wc;
-      case 'ramp':
-        return Icons.accessible;
-      case 'bus':
-        return Icons.directions_bus;
-      default:
-        return Icons.place;
-    }
-  }
-
-  List<String> _formatDetailsJson(String? detailsJsonStr) {
-    if (detailsJsonStr == null || detailsJsonStr.isEmpty) return [];
-
-    List<String> formattedDetails = [];
-    final Map<String, dynamic> decoded = jsonDecode(detailsJsonStr);
-
-    for (final entry in decoded.entries) {
-      if (entry.key == 'has_grab_bars') {
-        formattedDetails.add('Calçada elevada');
-      } else {
-        formattedDetails.add('${entry.key}: ${entry.value}');
-      }
-    }
-    return formattedDetails;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -547,74 +520,11 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
               if (isLoadingBuildingRoutes)
                 CircularProgressIndicator()
               else ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
-                    child: Text(
-                      'Acessibilidade',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.neutral[800],
-                      ),
-                    ),
-                  ),
-                ),
-                if (buildingPoisList.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text('Nenhum ponto de acessibilidade encontrado.'),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: buildingPoisList.length,
-                    itemBuilder: (context, index) {
-                      final poi = buildingPoisList[index];
-                      final name = poi['name'] ?? 'Sem nome';
-                      final category = poi['category'];
-                      final detailsJson = poi['detailsJson'];
-                      final formattedDetails = _formatDetailsJson(detailsJson);
-
-                      return ListItem(
-                        title: name,
-                        subtitle: formattedDetails.join(', '),
-                        leading: Icon(
-                          _getIconForCategory(category),
-                          color: AppColors.primary[500],
-                        ),
-                      );
-                    },
-                  ),
+                const ListHeader(title: 'Acessibilidade'),
+                BuildingAccessibilitiesList(accessibilities: accessibilities),
                 const SizedBox(height: 16),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
-                    child: Text(
-                      'Rotas Visuais',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                if (visualRoutes.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text('Nenhuma rota encontrada.'),
-                  )
-                else
-                  VisualRoutesList(visualRoutes: visualRoutes),
+                ListHeader(title: 'Rotas Visuais'),
+                BuildingVisualRoutesList(visualRoutes: visualRoutes),
               ],
             ],
           ),
@@ -624,17 +534,121 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
   }
 }
 
-class VisualRoutesList extends StatelessWidget {
-  const VisualRoutesList({super.key, required this.visualRoutes});
+class ListHeader extends StatelessWidget {
+  const ListHeader({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColors.neutral[800],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BuildingAccessibilitiesList extends StatelessWidget {
+  const BuildingAccessibilitiesList({super.key, required this.accessibilities});
+
+  final List<dynamic> accessibilities;
+
+  List<String> _formatDetailsJson(String? detailsJsonStr) {
+    if (detailsJsonStr == null || detailsJsonStr.isEmpty) return [];
+
+    List<String> formattedDetails = [];
+    final Map<String, dynamic> decoded = jsonDecode(detailsJsonStr);
+
+    for (final entry in decoded.entries) {
+      if (entry.key == 'has_grab_bars') {
+        formattedDetails.add('Calçada elevada');
+      } else {
+        formattedDetails.add('${entry.key}: ${entry.value}');
+      }
+    }
+    return formattedDetails;
+  }
+
+  IconData _getIconForCategory(String? category) {
+    switch (category) {
+      case 'elevator':
+        return Icons.elevator_outlined;
+      case 'bathroom':
+        return Icons.wc;
+      case 'ramp':
+        return Icons.accessible;
+      case 'bus':
+        return Icons.directions_bus;
+      default:
+        return Icons.place;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (accessibilities.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text('Nenhum ponto de acessibilidade encontrado.'),
+      );
+    }
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: accessibilities.length,
+      separatorBuilder: (context, index) {
+        return const SizedBox(height: 4); // Use width for horizontal lists
+      },
+      itemBuilder: (context, index) {
+        final poi = accessibilities[index];
+        final name = poi['name'] ?? 'Sem nome';
+        final category = poi['category'];
+        final detailsJson = poi['detailsJson'];
+        final formattedDetails = _formatDetailsJson(detailsJson);
+
+        return ListItem(
+          title: name,
+          subtitle: formattedDetails.join(', '),
+          leading: Icon(
+            _getIconForCategory(category),
+            color: AppColors.primary[500],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class BuildingVisualRoutesList extends StatelessWidget {
+  const BuildingVisualRoutesList({super.key, required this.visualRoutes});
 
   final List<dynamic> visualRoutes;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    if (visualRoutes.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text('Nenhuma rota encontrada.'),
+      );
+    }
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: visualRoutes.length,
+      separatorBuilder: (context, index) {
+        return const SizedBox(height: 4); // Use width for horizontal lists
+      },
       itemBuilder: (context, index) {
         final route = visualRoutes[index];
         final title = route['title'] ?? 'Sem título';
