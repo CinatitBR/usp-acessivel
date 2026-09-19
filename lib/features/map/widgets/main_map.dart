@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
@@ -8,16 +9,21 @@ import 'package:usp_acessivel/core/theme/app_colors.dart';
 import 'package:usp_acessivel/core/utils/utils.dart';
 
 class MainMap extends StatefulWidget {
+
   const MainMap({
     super.key,
     required this.onSelect,
     this.targetCenter,
     this.onReportSelect,
+    this.routeGeoJson,
+    this.routeBounds,
   });
 
   final void Function(String) onSelect;
   final VoidCallback? onReportSelect;
   final Geographic? targetCenter;
+  final Map<String, dynamic>? routeGeoJson;
+  final LngLatBounds? routeBounds;
 
   @override
   State<MainMap> createState() => _MainMapState();
@@ -40,7 +46,34 @@ class _MainMapState extends State<MainMap> {
         widget.targetCenter != oldWidget.targetCenter) {
       _controller.moveCamera(center: widget.targetCenter, zoom: 17);
     }
+
+    if (widget.routeBounds != null && widget.routeBounds != oldWidget.routeBounds) {
+      _controller.fitBounds(bounds: widget.routeBounds!, padding: const EdgeInsets.all(50));
+    }
+
+    if (widget.routeGeoJson != oldWidget.routeGeoJson) {
+      _updateRouteLine();
+    }
   }
+
+  Future<void> _updateRouteLine() async {
+    try {
+      if (widget.routeGeoJson != null) {
+        await _controller.style?.updateGeoJsonSource(
+          id: 'directions_route',
+          data: jsonEncode(widget.routeGeoJson),
+        );
+      } else {
+        await _controller.style?.updateGeoJsonSource(
+          id: 'directions_route',
+          data: '{"type": "FeatureCollection", "features": []}',
+        );
+      }
+    } catch (e) {
+      print('Error updating route line: $e');
+    }
+  }
+
 
   void _handleMapClick(MapEventClick event) async {
     // Check for map reports first
@@ -80,7 +113,7 @@ class _MainMapState extends State<MainMap> {
     if (features.isEmpty) {
       await _controller.style?.updateGeoJsonSource(
         id: 'selected-way',
-        data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
+        data: '{"type": "FeatureCollection", "features": []}',
       );
       return;
     }
@@ -154,7 +187,7 @@ void _handleStyleLoaded(StyleController style) async {
   await style.addSource(
     GeoJsonSource(
       id: 'selected-way',
-      data: FeatureCollection(List<Feature<Geometry>>.empty()).toString(),
+      data: '{"type": "FeatureCollection", "features": []}',
     ),
   );
 
@@ -213,6 +246,25 @@ void _handleStyleLoaded(StyleController style) async {
       paint: {'fill-color': '#FF4081', 'fill-pattern': 'concreto-escuro'},
     ),
   );
+
+  // Directions route line
+  await style.addSource(
+    GeoJsonSource(
+      id: 'directions_route',
+      data: '{"type": "FeatureCollection", "features": []}',
+    ),
+  );
+
+  await style.addLayer(
+    const LineStyleLayer(
+      sourceId: 'directions_route',
+      id: 'directions_route_layer',
+      layout: {'line-cap': 'round', 'line-join': 'round'},
+      paint: {'line-color': '#0000FF', 'line-width': 8.0, 'line-opacity': 0.8},
+      minZoom: 10,
+    ),
+  );
+
 
   // Map reports layer
   await style.addLayer(
