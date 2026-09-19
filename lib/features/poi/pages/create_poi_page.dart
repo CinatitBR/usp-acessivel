@@ -402,19 +402,34 @@ class PoiCategoryDropdown extends StatelessWidget {
     required this.onChanged,
   });
 
+  static const List<DropdownMenuEntry<String>> _entries = [
+    DropdownMenuEntry<String>(value: 'elevator', label: 'Elevador'),
+    DropdownMenuEntry<String>(value: 'bathroom', label: 'Banheiro'),
+    DropdownMenuEntry<String>(value: 'ramp', label: 'Rampa'),
+    DropdownMenuEntry<String>(value: 'bus', label: 'Ponto de Ônibus'),
+    DropdownMenuEntry<String>(value: 'other', label: 'Outro'),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      decoration: const InputDecoration(labelText: 'Categoria *'),
-      initialValue: category,
-      items: const [
-        DropdownMenuItem(value: 'elevator', child: Text('Elevador')),
-        DropdownMenuItem(value: 'bathroom', child: Text('Banheiro')),
-        DropdownMenuItem(value: 'ramp', child: Text('Rampa')),
-        DropdownMenuItem(value: 'bus', child: Text('Ponto de Ônibus')),
-        DropdownMenuItem(value: 'other', child: Text('Outro')),
-      ],
-      onChanged: onChanged,
+    return DropdownMenuFormField<String>(
+      initialSelection: category,
+      label: const Text('Categoria *'),
+      dropdownMenuEntries: _entries,
+      expandedInsets: EdgeInsets.zero,
+      enableFilter: true,
+      enableSearch: true,
+      requestFocusOnTap: true,
+      filterCallback: (entries, filter) {
+        final query = filter.trim().toLowerCase();
+        if (query.isEmpty) return entries;
+        return entries.where((entry) {
+          return entry.label.toLowerCase().contains(query);
+        }).toList();
+      },
+      onSelected: onChanged,
+      validator: (value) =>
+          value == null || value.isEmpty ? 'Selecione uma categoria' : null,
     );
   }
 }
