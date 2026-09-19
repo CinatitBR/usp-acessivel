@@ -51,5 +51,6 @@ lib/firebase_options.dart
 # Local util files
 connect_wifi.sh
 
-# Local development environment variables. Developer should create their own .env.development file.
+# Secret environment variables. Developers should create their own .env local files.
 .env.development
+.env.production
