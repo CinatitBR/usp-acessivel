@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 import 'package:geolocator/geolocator.dart';
-import 'package:usp_acessivel/core/theme/app_colors.dart';
 import 'package:usp_acessivel/features/map/models/building_model.dart';
 import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
+
+enum PoiCategory { elevator, bathroom, ramp, bus, other }
 
 class CreatePoiPage extends StatefulWidget {
   const CreatePoiPage({super.key});
@@ -33,8 +33,7 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
 
   // Dynamic fields
   // Elevator
-  final List<String> _elevatorFloors = [];
-  final TextEditingController _floorInputController = TextEditingController();
+  List<String> _elevatorFloors = [];
   String _elevatorDimensions = '';
 
   // Bathroom
@@ -124,7 +123,6 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
 
   @override
   void dispose() {
-    _floorInputController.dispose();
     super.dispose();
   }
 
@@ -220,19 +218,8 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
                 onSaved: (value) => _name = value!,
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Categoria *'),
-                initialValue: _category,
-                items: const [
-                  DropdownMenuItem(value: 'elevator', child: Text('Elevador')),
-                  DropdownMenuItem(value: 'bathroom', child: Text('Banheiro')),
-                  DropdownMenuItem(value: 'ramp', child: Text('Rampa')),
-                  DropdownMenuItem(
-                    value: 'bus',
-                    child: Text('Ponto de Ônibus'),
-                  ),
-                  DropdownMenuItem(value: 'other', child: Text('Outro')),
-                ],
+              PoiCategoryDropdown(
+                category: _category,
                 onChanged: (value) {
                   setState(() {
                     _category = value!;
@@ -251,54 +238,11 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            key: ValueKey('lat_$_lat'),
-                            decoration: const InputDecoration(
-                              labelText: 'Latitude *',
-                            ),
-                            initialValue: _lat.toString(),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obrigatório';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Número inválido';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) => _lat = double.parse(value!),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextFormField(
-                            key: ValueKey('lon_$_lon'),
-                            decoration: const InputDecoration(
-                              labelText: 'Longitude *',
-                            ),
-                            initialValue: _lon.toString(),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obrigatório';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Número inválido';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) => _lon = double.parse(value!),
-                          ),
-                        ),
-                      ],
+                    PoiLocationRow(
+                      lat: _lat,
+                      lon: _lon,
+                      onLatSaved: (value) => _lat = double.parse(value!),
+                      onLonSaved: (value) => _lon = double.parse(value!),
                     ),
                     if (_locationError)
                       const Padding(
@@ -311,44 +255,12 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
                   ],
                 ),
               const SizedBox(height: 16),
-              Autocomplete<Building>(
-                displayStringForOption: (Building option) => option.name,
-                optionsBuilder: (TextEditingValue textEditingValue) {
-                  if (textEditingValue.text.isEmpty) {
-                    return const Iterable<Building>.empty();
-                  }
-                  return _buildingEntries.where((Building option) {
-                    return option.name.toLowerCase().contains(
-                      textEditingValue.text.toLowerCase(),
-                    );
-                  });
-                },
-                onSelected: (Building selection) {
-                  setState(() {
-                    _selectedBuildingId = selection.id;
-                  });
-                },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onFieldSubmitted) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          labelText: 'Edifício Associado (opcional)',
-                          suffixIcon: _selectedBuildingId != null
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                    setState(() {
-                                      _selectedBuildingId = null;
-                                    });
-                                    controller.clear();
-                                  },
-                                )
-                              : null,
-                        ),
-                      );
-                    },
+              BuildingAutocomplete(
+                buildingEntries: _buildingEntries,
+                selectedBuildingId: _selectedBuildingId,
+                onBuildingSelected: (selection) => setState(() {
+                  _selectedBuildingId = selection?.id;
+                }),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -357,92 +269,35 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
               ),
               const SizedBox(height: 8),
               if (_category == 'elevator') ...[
-                TextFormField(
-                  controller: _floorInputController,
-                  decoration: const InputDecoration(
-                    labelText: 'Adicionar Andar',
-                    hintText: 'Digite o número e pressione Espaço ou Enter',
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
-                  ],
-                  onChanged: (value) {
-                    if (value.contains(' ')) {
-                      final digitValue = value.replaceAll(' ', '');
-                      if (digitValue.isNotEmpty &&
-                          !_elevatorFloors.contains(digitValue)) {
-                        setState(() {
-                          _elevatorFloors.add(digitValue);
-                        });
-                      }
-                      _floorInputController.clear();
-                    }
-                  },
-                  onFieldSubmitted: (value) {
-                    final digitValue = value.replaceAll(' ', '');
-                    if (digitValue.isNotEmpty &&
-                        !_elevatorFloors.contains(digitValue)) {
-                      setState(() {
-                        _elevatorFloors.add(digitValue);
-                        _floorInputController.clear();
-                      });
-                    }
-                  },
-                ),
-                if (_elevatorFloors.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                    child: Wrap(
-                      spacing: 8.0,
-                      children: _elevatorFloors.map((floor) {
-                        return Chip(
-                          label: Text(floor),
-                          onDeleted: () {
-                            setState(() {
-                              _elevatorFloors.remove(floor);
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Dimensões da cabine (ex: 1.20m x 1.50m)',
-                  ),
-                  onSaved: (value) => _elevatorDimensions = value ?? '',
+                ElevatorFields(
+                  initialFloors: _elevatorFloors,
+                  onFloorsChanged: (floors) => setState(() {
+                    _elevatorFloors = floors;
+                  }),
+                  onSavedDimensions: (dimensions) => setState(() {
+                    _elevatorDimensions = dimensions ?? '';
+                  }),
                 ),
               ] else if (_category == 'bathroom') ...[
-                SwitchListTile(
-                  title: const Text('É unissex?'),
-                  value: _bathroomIsUnisex,
-                  onChanged: (val) => setState(() => _bathroomIsUnisex = val),
-                ),
-                SwitchListTile(
-                  title: const Text('Possui barras de apoio?'),
-                  value: _bathroomHasGrabBars,
-                  onChanged: (val) =>
-                      setState(() => _bathroomHasGrabBars = val),
-                ),
-                SwitchListTile(
-                  title: const Text('É exclusivo para PCD?'),
-                  value: _bathroomIsPcdExclusive,
-                  onChanged: (val) =>
-                      setState(() => _bathroomIsPcdExclusive = val),
+                BathroomFields(
+                  isUnisex: _bathroomIsUnisex,
+                  hasGrabBars: _bathroomHasGrabBars,
+                  isPcdExclusive: _bathroomIsPcdExclusive,
+                  onUnisexChanged: (value) =>
+                      setState(() => _bathroomIsUnisex = value),
+                  onGrabBarsChanged: (value) =>
+                      setState(() => _bathroomHasGrabBars = value),
+                  onPcdExclusiveChanged: (value) =>
+                      setState(() => _bathroomIsPcdExclusive = value),
                 ),
               ] else if (_category == 'ramp') ...[
-                SwitchListTile(
-                  title: const Text('Possui corrimão?'),
-                  value: _rampHasHandrail,
-                  onChanged: (val) => setState(() => _rampHasHandrail = val),
-                ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Inclinação (ex: moderada, íngreme)',
-                  ),
-                  initialValue: _rampSteepness,
-                  onSaved: (value) => _rampSteepness = value ?? '',
+                RampFields(
+                  rampHasHandrail: _rampHasHandrail,
+                  rampSteepness: _rampSteepness,
+                  onRampHandrailChanged: (val) =>
+                      setState(() => _rampHasHandrail = val),
+                  onRampSteepnessChanged: (value) =>
+                      setState(() => _rampSteepness = value ?? ''),
                 ),
               ] else if (_category == 'bus') ...[
                 SwitchListTile(
@@ -464,10 +319,6 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _isLoading ? null : _submitPoi,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text('Salvar Ponto de Acessibilidade'),
@@ -477,6 +328,331 @@ class _CreatePoiPageState extends State<CreatePoiPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class PoiLocationRow extends StatelessWidget {
+  final double lat;
+  final double lon;
+
+  final FormFieldSetter<String?> onLatSaved;
+  final FormFieldSetter<String?> onLonSaved;
+
+  const PoiLocationRow({
+    super.key,
+    required this.lat,
+    required this.lon,
+    required this.onLatSaved,
+    required this.onLonSaved,
+  });
+
+  String? _validator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Campo obrigatório';
+    }
+    if (double.tryParse(value) == null) {
+      return 'Número inválido';
+    }
+    return null;
+  }
+
+  final TextInputType _keyboardType = const TextInputType.numberWithOptions(
+    decimal: true,
+    signed: true,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            key: ValueKey('lat_$lat'),
+            decoration: const InputDecoration(labelText: 'Latitude *'),
+            initialValue: lat.toString(),
+            keyboardType: _keyboardType,
+            validator: _validator,
+            onSaved: onLatSaved,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: TextFormField(
+            key: ValueKey('lon_$lon'),
+            decoration: const InputDecoration(labelText: 'Longitude *'),
+            initialValue: lon.toString(),
+            keyboardType: _keyboardType,
+            validator: _validator,
+            onSaved: onLonSaved,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class PoiCategoryDropdown extends StatelessWidget {
+  final String category;
+  final ValueChanged<String?> onChanged;
+
+  const PoiCategoryDropdown({
+    super.key,
+    required this.category,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(labelText: 'Categoria *'),
+      initialValue: category,
+      items: const [
+        DropdownMenuItem(value: 'elevator', child: Text('Elevador')),
+        DropdownMenuItem(value: 'bathroom', child: Text('Banheiro')),
+        DropdownMenuItem(value: 'ramp', child: Text('Rampa')),
+        DropdownMenuItem(value: 'bus', child: Text('Ponto de Ônibus')),
+        DropdownMenuItem(value: 'other', child: Text('Outro')),
+      ],
+      onChanged: onChanged,
+    );
+  }
+}
+
+class BuildingAutocomplete extends StatelessWidget {
+  final List<Building> buildingEntries;
+  final String? selectedBuildingId;
+  final ValueChanged<Building?> onBuildingSelected;
+
+  const BuildingAutocomplete({
+    super.key,
+    required this.buildingEntries,
+    required this.selectedBuildingId,
+    required this.onBuildingSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<Building>(
+      displayStringForOption: (Building option) => option.name,
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return const Iterable<Building>.empty();
+        }
+        return buildingEntries.where((Building option) {
+          return option.name.toLowerCase().contains(
+            textEditingValue.text.toLowerCase(),
+          );
+        });
+      },
+      onSelected: onBuildingSelected,
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        return TextFormField(
+          controller: controller,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: 'Edifício Associado (opcional)',
+            suffixIcon: selectedBuildingId != null
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      onBuildingSelected(null);
+                      controller.clear();
+                    },
+                  )
+                : null,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ElevatorFields extends StatefulWidget {
+  final List<String> initialFloors;
+  final ValueChanged<List<String>> onFloorsChanged;
+  final FormFieldSetter<String> onSavedDimensions;
+
+  const ElevatorFields({
+    super.key,
+    required this.initialFloors,
+    required this.onFloorsChanged,
+    required this.onSavedDimensions,
+  });
+
+  @override
+  State<ElevatorFields> createState() => _ElevatorFieldsState();
+}
+
+class _ElevatorFieldsState extends State<ElevatorFields> {
+  final TextEditingController _floorInputController = TextEditingController();
+  late List<String> _elevatorFloors = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _elevatorFloors = List.from(widget.initialFloors);
+  }
+
+  @override
+  void dispose() {
+    _floorInputController.dispose();
+    super.dispose();
+  }
+
+  void _addFloor(String value) {
+    final digitValue = value.replaceAll(' ', '');
+    if (digitValue.isNotEmpty && !_elevatorFloors.contains(digitValue)) {
+      setState(() {
+        _elevatorFloors.add(digitValue);
+      });
+      // Notify parent form of the update
+      widget.onFloorsChanged(_elevatorFloors);
+    }
+    _floorInputController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: _floorInputController,
+          decoration: const InputDecoration(
+            labelText: 'Adicionar Andar',
+            hintText: 'Digite o número e pressione Espaço ou Enter',
+          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+          ],
+          onChanged: (value) {
+            if (value.contains(' ')) {
+              _addFloor(value);
+            }
+          },
+          onFieldSubmitted: (value) {
+            _addFloor(value);
+          },
+        ),
+        if (_elevatorFloors.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+            child: Wrap(
+              spacing: 8.0,
+              children: _elevatorFloors.map((floor) {
+                return Semantics(
+                  label: 'Remover andar $floor',
+                  child: Chip(
+                    label: Text(floor),
+                    onDeleted: () {
+                      setState(() {
+                        _elevatorFloors.remove(floor);
+                      });
+                      widget.onFloorsChanged(_elevatorFloors);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        const SizedBox(height: 16),
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Dimensões da cabine (ex: 1.20m x 1.50m)',
+          ),
+          onSaved: widget.onSavedDimensions,
+        ),
+      ],
+    );
+  }
+}
+
+class BathroomFields extends StatelessWidget {
+  final bool isUnisex;
+  final bool hasGrabBars;
+  final bool isPcdExclusive;
+  final ValueChanged<bool> onUnisexChanged;
+  final ValueChanged<bool> onGrabBarsChanged;
+  final ValueChanged<bool> onPcdExclusiveChanged;
+
+  const BathroomFields({
+    super.key,
+    required this.isUnisex,
+    required this.hasGrabBars,
+    required this.isPcdExclusive,
+    required this.onUnisexChanged,
+    required this.onGrabBarsChanged,
+    required this.onPcdExclusiveChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          title: const Text('Banheiro Unissex'),
+          subtitle: const Text('Acessível para qualquer gênero'),
+          value: isUnisex,
+          onChanged: onUnisexChanged,
+          contentPadding: EdgeInsets.zero,
+        ),
+        const Divider(),
+        SwitchListTile(
+          title: const Text('Possui Barras de Apoio'),
+          subtitle: const Text(
+            'Presença de barras de segurança regulamentadas',
+          ),
+          value: hasGrabBars,
+          onChanged: onGrabBarsChanged,
+          contentPadding: EdgeInsets.zero,
+        ),
+        const Divider(),
+        SwitchListTile(
+          title: const Text('Exclusivo PCD'),
+          subtitle: const Text('Destinado apenas para pessoas com deficiência'),
+          value: isPcdExclusive,
+          onChanged: onPcdExclusiveChanged,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ],
+    );
+  }
+}
+
+class RampFields extends StatelessWidget {
+  final bool rampHasHandrail;
+  final String rampSteepness;
+  final ValueChanged<bool> onRampHandrailChanged;
+  final ValueChanged<String?> onRampSteepnessChanged;
+
+  const RampFields({
+    super.key,
+    required this.rampHasHandrail,
+    required this.onRampHandrailChanged,
+    required this.rampSteepness,
+    required this.onRampSteepnessChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SwitchListTile(
+          title: const Text('Possui corrimão?'),
+          value: rampHasHandrail,
+          onChanged: onRampHandrailChanged,
+        ),
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Inclinação (ex: moderada, íngreme)',
+          ),
+          initialValue: rampSteepness,
+          onSaved: onRampSteepnessChanged,
+        ),
+      ],
     );
   }
 }
