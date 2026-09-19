@@ -240,33 +240,58 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 },
               ),
               Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
-              FilledButton(
-                onPressed: _isLoading ? null : _pickImagesAndAddStep,
-                style: FilledButton.styleFrom(
-                  minimumSize: Size(200, 48),
-                  padding: .symmetric(vertical: 16),
-                ),
-                child: Row(
-                  mainAxisAlignment: .center,
-                  spacing: 16,
-                  children: [
-                    if (_isLoading)
-                      Column(
-                        spacing: 8,
-                        children: [
-                          Text('$_processedFiles arquivos processados'),
-                          CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+              FormField<int>(
+                validator: (value) {
+                  if (_steps.isEmpty) {
+                    return 'Por favor, adicione pelo menos uma foto.';
+                  }
+                  return null;
+                },
+                builder: (FormFieldState<int> state) {
+                  return Column(
+                    children: [
+                      FilledButton(
+                        onPressed: _isLoading ? null : _pickImagesAndAddStep,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(200, 48),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: 16,
+                          children: [
+                            if (_isLoading)
+                              Column(
+                                spacing: 8,
+                                children: [
+                                  Text('$_processedFiles arquivos processados'),
+                                  const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              )
+                            else ...[
+                              const Icon(Icons.add_a_photo),
+                              const Text('Adicionar fotos'),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (state.hasError && _steps.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            state.errorText!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
                           ),
-                        ],
-                      )
-                    else ...[
-                      Icon(Icons.add_a_photo),
-                      const Text('Adicionar fotos'),
+                        ),
                     ],
-                  ],
-                ),
+                  );
+                },
               ),
               Column(
                 children: List.generate(_steps.length, (index) {
