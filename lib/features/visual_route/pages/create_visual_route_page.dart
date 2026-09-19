@@ -14,7 +14,6 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-
 import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
 
 class CreateVisualRoutePage extends StatefulWidget {
@@ -25,17 +24,20 @@ class CreateVisualRoutePage extends StatefulWidget {
 }
 
 class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  List<DropdownMenuEntry<String>> _buildingEntries = [];
 
   String? _selectedBuildingId;
-  List<DropdownMenuEntry<String>> _buildingEntries = [];
+  String _title = '';
+  String _routeDescription = ''; // To be used in the future, maybe
+
   final List<RouteStep> _steps = [];
   final ImagePicker _picker = ImagePicker();
+  int _processedFiles = 0;
+
   bool _isLoading = false; // Flag for image processing
   bool _isSaving = false; // Dedicated flag for POST upload
-  int _processedFiles = 0;
 
   @override
   void initState() {
@@ -45,12 +47,6 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
 
   @override
   void dispose() {
-    _locationController.dispose();
-    _titleController.dispose();
-    _descriptionController.dispose();
-    for (var step in _steps) {
-      step.descriptionController.dispose();
-    }
     super.dispose();
   }
 
@@ -108,175 +104,141 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            spacing: 16,
-            children: [
-              Text(
-                'Crie uma rota com fotos e instruções para orientar o usuário pelo espaço.',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.neutral[600],
-                  fontSize: 16,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              spacing: 16,
+              children: [
+                Text(
+                  'Crie uma rota com fotos e instruções para orientar o usuário pelo espaço.',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.neutral[600],
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              Text(
-                'Informações Gerais',
-                style: Theme.of(
+                Text(
+                  'Informações Gerais',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(color: Color(0xFF1A1C1C)),
+                ),
+                Text(
+                  'Título da rota',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: Color(0xFF444654)),
+                ),
+                _buildTextField(
                   context,
-                ).textTheme.titleLarge?.copyWith(color: Color(0xFF1A1C1C)),
-              ),
-              Text(
-                'Título da rota',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(color: Color(0xFF444654)),
-              ),
-              _buildTextField(
-                context,
-                hint: 'Ex: Entrada acessível para cadeirantes',
-                controller: _titleController,
-              ),
-              _buildFieldTitle(context, 'Edifício ou instituto'),
-              DropdownMenu(
-                expandedInsets: EdgeInsets.zero,
-                controller: _locationController,
-                label: const Text('Selecione o local'),
-                initialSelection: _selectedBuildingId,
-                onSelected: (String? value) {
-                  if (value != null) {
+                  hint: 'Ex: Entrada acessível para cadeirantes',
+                  onSaved: (value) {
                     setState(() {
-                      _selectedBuildingId = value;
+                      _title = value ?? '';
                     });
-                  }
-                },
-                textStyle: const TextStyle(color: Color(0xFF1A1C1C)),
-                dropdownMenuEntries: _buildingEntries,
-                menuHeight: 340,
-
-                // Enables real-time typing and filtering of the entries
-                enableFilter: true,
-                enableSearch: true,
-                requestFocusOnTap:
-                    true, // Opens keyboard immediately when tapped
-                // Custom search callback to ignore case and match partial text / acronyms
-                filterCallback:
-                    (List<DropdownMenuEntry<String>> entries, String filter) {
-                      final trimmedFilter = filter.trim().toLowerCase();
-                      if (trimmedFilter.isEmpty) {
-                        return entries;
-                      }
-
-                      return entries.where((entry) {
-                        final labelMatches = entry.label.toLowerCase().contains(
-                          trimmedFilter,
-                        );
-                        final valueMatches = entry.value.toLowerCase().contains(
-                          trimmedFilter,
-                        );
-                        return labelMatches || valueMatches;
-                      }).toList();
-                    },
-
-                menuStyle: MenuStyle(
-                  padding: WidgetStatePropertyAll(
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  ),
-                  shape: WidgetStatePropertyAll(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16)),
-                    ),
-                  ),
-                  elevation: const WidgetStatePropertyAll(4),
-                  backgroundColor: const WidgetStatePropertyAll(Colors.white),
+                  },
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Por favor, insira um título.';
+                    }
+                    return null;
+                  },
                 ),
-                inputDecorationTheme: InputDecorationTheme(
-                  filled: true,
-                  fillColor: AppColors.neutral[100],
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.neutral[200]!),
-                    borderRadius: const BorderRadius.all(Radius.circular(24)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: AppColors.neutral[700]!,
-                      width: 2.0,
-                    ),
-                    borderRadius: const BorderRadius.all(Radius.circular(24)),
-                  ),
+                _buildFieldTitle(context, 'Edifício ou instituto'),
+                _BuildingDropdown(
+                  selectedBuildingId: _selectedBuildingId,
+                  buildingEntries: _buildingEntries,
+                  onSelected: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedBuildingId = value;
+                      });
+                    }
+                  },
                 ),
-              ),
-              _buildFieldTitle(context, 'Sobre esta rota'),
-              _buildTextField(
-                context,
-                hint: 'Descreva brevemente o percurso...',
-                controller: _descriptionController,
-              ),
-              Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
-              FilledButton(
-                onPressed: _isLoading ? null : _pickImagesAndAddStep,
-                style: FilledButton.styleFrom(
-                  minimumSize: Size(200, 48),
-                  padding: .symmetric(vertical: 16),
+                _buildFieldTitle(context, 'Sobre esta rota'),
+                _buildTextField(
+                  context,
+                  hint: 'Descreva brevemente o percurso...',
+                  onSaved: (value) {
+                    setState(() {
+                      _routeDescription = value ?? '';
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Por favor, insira uma descrição.';
+                    }
+                    return null;
+                  },
                 ),
-                child: Row(
-                  mainAxisAlignment: .center,
-                  spacing: 16,
-                  children: [
-                    if (_isLoading)
-                      Column(
-                        spacing: 8,
-                        children: [
-                          Text('$_processedFiles arquivos processados'),
-                          CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        ],
-                      )
-                    else ...[
-                      Icon(Icons.add_a_photo),
-                      const Text('Adicionar fotos'),
+                Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
+                FilledButton(
+                  onPressed: _isLoading ? null : _pickImagesAndAddStep,
+                  style: FilledButton.styleFrom(
+                    minimumSize: Size(200, 48),
+                    padding: .symmetric(vertical: 16),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: .center,
+                    spacing: 16,
+                    children: [
+                      if (_isLoading)
+                        Column(
+                          spacing: 8,
+                          children: [
+                            Text('$_processedFiles arquivos processados'),
+                            CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ],
+                        )
+                      else ...[
+                        Icon(Icons.add_a_photo),
+                        const Text('Adicionar fotos'),
+                      ],
                     ],
+                  ),
+                ),
+                Column(
+                  children: List.generate(_steps.length, (index) {
+                    final step = _steps[index];
+                    return _buildStepBox(
+                      context,
+                      key: ValueKey(step.id),
+                      step: step,
+                      stepIndex: index,
+                    );
+                  }),
+                ),
+
+                Row(
+                  mainAxisAlignment: .spaceEvenly,
+                  children: [
+                    FilledButton(
+                      onPressed: _isSaving ? null : _onCancel,
+                      style: FilledButton.styleFrom(
+                        // fixedSize: Size(180, 48),
+                        padding: .symmetric(horizontal: 16),
+                        backgroundColor: AppColors.neutral[200],
+                      ),
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(color: AppColors.neutral[700]),
+                      ),
+                    ),
+                    FilledButton(
+                      onPressed: _isSaving ? null : _onSave,
+                      style: FilledButton.styleFrom(
+                        padding: .symmetric(horizontal: 40),
+                      ),
+                      child: const Text('Salvar rota'),
+                    ),
                   ],
                 ),
-              ),
-              Column(
-                children: List.generate(_steps.length, (index) {
-                  final step = _steps[index];
-                  return _buildStepBox(
-                    context,
-                    key: ValueKey(step.id),
-                    step: step,
-                    stepIndex: index,
-                  );
-                }),
-              ),
-
-              Row(
-                mainAxisAlignment: .spaceEvenly,
-                children: [
-                  FilledButton(
-                    onPressed: _isSaving ? null : _onCancel,
-                    style: FilledButton.styleFrom(
-                      // fixedSize: Size(180, 48),
-                      padding: .symmetric(horizontal: 16),
-                      backgroundColor: AppColors.neutral[200],
-                    ),
-                    child: Text(
-                      'Cancelar',
-                      style: TextStyle(color: AppColors.neutral[700]),
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: _isSaving ? null : _onSave,
-                    style: FilledButton.styleFrom(
-                      padding: .symmetric(horizontal: 40),
-                    ),
-                    child: const Text('Salvar rota'),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -296,11 +258,13 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     BuildContext context, {
     String? hint,
     int? maxLines,
-    TextEditingController? controller,
+    String? Function(String?)? validator,
+    required FormFieldSetter<String> onSaved,
   }) {
-    return TextField(
-      controller: controller,
+    return TextFormField(
+      onSaved: onSaved,
       maxLines: maxLines,
+      validator: validator,
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.neutral[100],
@@ -374,7 +338,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
           RouteStep(
             id: timestamp.toString(),
             image: convertedImage ?? image,
-            descriptionController: TextEditingController(),
+            description: '',
           ),
         );
         setState(() => _processedFiles += 1);
@@ -398,34 +362,29 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
 
   void _removeStep(int index) {
     setState(() {
-      _steps[index].descriptionController.dispose();
       _steps.removeAt(index);
     });
   }
 
   void _onCancel() {
     setState(() {
-      _titleController.clear();
-      _descriptionController.clear();
-      _locationController.text = '';
       _selectedBuildingId = null;
+      _title = '';
+      _routeDescription = '';
       _processedFiles = 0;
-      for (var step in _steps) {
-        step.descriptionController.dispose();
-      }
       _steps.clear();
+
+      _formKey.currentState?.reset();
     });
   }
 
   Future<void> _onSave() async {
-    if (_titleController.text.isEmpty || _selectedBuildingId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha o título e o edifício.'),
-        ),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    // Triggers onSaved on every TextFormField in the form tree
+    _formKey.currentState!.save();
 
     setState(() {
       _isLoading = true;
@@ -472,10 +431,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
           .map((entry) {
             final int index = entry.key;
             final RouteStep step = entry.value;
-            return {
-              'step_order': index,
-              'description': step.descriptionController.text,
-            };
+            return {'stepOrder': index, 'description': step.description};
           })
           .toList();
 
@@ -491,7 +447,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       }
 
       final formData = FormData.fromMap({
-        'title': _titleController.text,
+        'title': _title,
         'buildingId': _selectedBuildingId,
         'stepsMeta': stepsMetaJson,
         'images': imageFiles,
@@ -642,7 +598,15 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                     context,
                     hint: 'Escreva a instrução',
                     maxLines: 2,
-                    controller: step.descriptionController,
+                    onSaved: (value) {
+                      step.description = value?.trim() ?? '';
+                    },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Por favor, insira uma instrução.';
+                      }
+                      return null;
+                    },
                   ),
                 ],
               ),
@@ -663,6 +627,84 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
         shape: BoxShape.circle,
       ),
       child: const Icon(Icons.close, size: 24, color: Colors.white),
+    );
+  }
+}
+
+class _BuildingDropdown extends StatelessWidget {
+  final String? selectedBuildingId;
+  final List<DropdownMenuEntry<String>> buildingEntries;
+  final ValueChanged<String?> onSelected;
+
+  const _BuildingDropdown({
+    required this.selectedBuildingId,
+    required this.buildingEntries,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownMenuFormField(
+      validator: (value) {
+        if (selectedBuildingId == null || selectedBuildingId!.isEmpty) {
+          return 'Por favor, selecione o edifício.';
+        }
+        return null;
+      },
+      expandedInsets: EdgeInsets.zero,
+      label: const Text('Selecione o local'),
+      initialSelection: selectedBuildingId,
+      onSelected: onSelected,
+      textStyle: const TextStyle(color: Color(0xFF1A1C1C)),
+      dropdownMenuEntries: buildingEntries,
+      menuHeight: 340,
+
+      // Enables real-time typing and filtering of the entries
+      enableFilter: true,
+      enableSearch: true,
+      requestFocusOnTap: true, // Opens keyboard immediately when tapped
+      // Custom search callback to ignore case and match partial text / acronyms
+      filterCallback: (List<DropdownMenuEntry<String>> entries, String filter) {
+        final trimmedFilter = filter.trim().toLowerCase();
+        if (trimmedFilter.isEmpty) {
+          return entries;
+        }
+
+        return entries.where((entry) {
+          final labelMatches = entry.label.toLowerCase().contains(
+            trimmedFilter,
+          );
+          final valueMatches = entry.value.toLowerCase().contains(
+            trimmedFilter,
+          );
+          return labelMatches || valueMatches;
+        }).toList();
+      },
+
+      menuStyle: MenuStyle(
+        padding: WidgetStatePropertyAll(
+          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        ),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+        ),
+        elevation: const WidgetStatePropertyAll(4),
+        backgroundColor: const WidgetStatePropertyAll(Colors.white),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.neutral[100],
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.neutral[200]!),
+          borderRadius: const BorderRadius.all(Radius.circular(24)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.neutral[700]!, width: 2.0),
+          borderRadius: const BorderRadius.all(Radius.circular(24)),
+        ),
+      ),
     );
   }
 }
