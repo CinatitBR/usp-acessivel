@@ -29,6 +29,8 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
 
+  final _formKey = GlobalKey<FormState>();
+
   String? _selectedBuildingId;
   List<DropdownMenuEntry<String>> _buildingEntries = [];
   final List<RouteStep> _steps = [];
@@ -108,9 +110,11 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            spacing: 16,
-            children: [
+          child: Form(
+            key: _formKey,
+            child: Column(
+              spacing: 16,
+              children: [
               Text(
                 'Crie uma rota com fotos e instruções para orientar o usuário pelo espaço.',
                 style: TextStyle(
@@ -135,20 +139,36 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                 context,
                 hint: 'Ex: Entrada acessível para cadeirantes',
                 controller: _titleController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Por favor, insira um título.';
+                  }
+                  return null;
+                },
               ),
               _buildFieldTitle(context, 'Edifício ou instituto'),
-              DropdownMenu(
-                expandedInsets: EdgeInsets.zero,
-                controller: _locationController,
-                label: const Text('Selecione o local'),
-                initialSelection: _selectedBuildingId,
-                onSelected: (String? value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedBuildingId = value;
-                    });
+              FormField<String>(
+                validator: (value) {
+                  if (_selectedBuildingId == null || _selectedBuildingId!.isEmpty) {
+                    return 'Por favor, selecione o edifício.';
                   }
+                  return null;
                 },
+                builder: (FormFieldState<String> state) {
+                  return DropdownMenu(
+                    expandedInsets: EdgeInsets.zero,
+                    controller: _locationController,
+                    label: const Text('Selecione o local'),
+                    initialSelection: _selectedBuildingId,
+                    errorText: state.errorText,
+                    onSelected: (String? value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedBuildingId = value;
+                        });
+                        state.didChange(value);
+                      }
+                    },
                 textStyle: const TextStyle(color: Color(0xFF1A1C1C)),
                 dropdownMenuEntries: _buildingEntries,
                 menuHeight: 340,
@@ -204,12 +224,20 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                     borderRadius: const BorderRadius.all(Radius.circular(24)),
                   ),
                 ),
+              );
+              },
               ),
               _buildFieldTitle(context, 'Sobre esta rota'),
               _buildTextField(
                 context,
                 hint: 'Descreva brevemente o percurso...',
                 controller: _descriptionController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Por favor, insira uma descrição.';
+                  }
+                  return null;
+                },
               ),
               Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
               FilledButton(
@@ -278,6 +306,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
               ),
             ],
           ),
+          ),
         ),
       ),
     );
@@ -297,10 +326,12 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
     String? hint,
     int? maxLines,
     TextEditingController? controller,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      validator: validator,
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.neutral[100],
@@ -418,12 +449,7 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
   }
 
   Future<void> _onSave() async {
-    if (_titleController.text.isEmpty || _selectedBuildingId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha o título e o edifício.'),
-        ),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -643,6 +669,12 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
                     hint: 'Escreva a instrução',
                     maxLines: 2,
                     controller: step.descriptionController,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Por favor, insira uma instrução.';
+                      }
+                      return null;
+                    },
                   ),
                 ],
               ),
