@@ -37,7 +37,13 @@ class _MapPageState extends State<MapPage> {
   Geographic? _targetCenter;
   List<Building> _buildingEntries = [];
 
-  FeatureCollection? directions;
+
+  bool _isDirectionsMode = false;
+  Building? _startBuilding;
+  Building? _endBuilding;
+  Map<String, dynamic>? _routeGeoJson;
+  LngLatBounds? _routeBoundingBox;
+
 
   @override
   void initState() {
@@ -146,22 +152,45 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+
   void _fetchDirections() async {
+    if (_startBuilding == null || _endBuilding == null) return;
+
     try {
       final directionsService = DirectionsService();
       final result = await directionsService.directions(
         'wheelchair',
-        -46.7317,
-        -23.55921,
-        -46.72733,
-        -23.55764,
+        _startBuilding!.longitude,
+        _startBuilding!.latitude,
+        _endBuilding!.longitude,
+        _endBuilding!.latitude,
       );
 
-      setState(() => directions = result);
+      setState(() {
+        _routeGeoJson = result as Map<String, dynamic>?;
+        if (result != null && result['bbox'] != null) {
+          final bbox = result['bbox'];
+          _routeBoundingBox = LngLatBounds(
+            longitudeWest: (bbox[0] as num).toDouble(),
+            latitudeSouth: (bbox[1] as num).toDouble(),
+            longitudeEast: (bbox[2] as num).toDouble(),
+            latitudeNorth: (bbox[3] as num).toDouble(),
+          );
+        }
+      });
     } catch (e) {
       print(e);
+      // Could show a snackbar on error
     }
   }
+
+  void _clearDirections() {
+    setState(() {
+      _routeGeoJson = null;
+      _routeBoundingBox = null;
+    });
+  }
+
 
   void _handleActionButtonClick(BuildContext context) {
     showModalBottomSheet<void>(
@@ -225,6 +254,8 @@ class _MapPageState extends State<MapPage> {
       children: [
         MainMap(
           targetCenter: _targetCenter,
+          routeGeoJson: _routeGeoJson,
+          routeBounds: _routeBoundingBox,
           onReportSelect: _showReportDialog,
           onSelect: (name) {
             final building = _buildingEntries.cast<Building?>().firstWhere(
@@ -253,56 +284,153 @@ class _MapPageState extends State<MapPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                MapSearchBar(
-                  optionsBuilder: (TextEditingValue textEditingValue) {
-                    if (textEditingValue.text.isEmpty) {
-                      return const Iterable<Building>.empty();
-                    }
-                    return _buildingEntries.where((Building option) {
-                      return option.name.toLowerCase().contains(
-                        textEditingValue.text.toLowerCase(),
-                      );
-                    });
-                  },
-                  onSelected: (Building selection) {
-                    // Hide keyboard upon selection
-                    FocusScope.of(context).unfocus();
-
-                    setState(() {
-                      _showAllVisualRoutes = false;
-                      _selectedBuilding = selection.name;
-
-                      _targetCenter = Geographic(
-                        lat: selection.latitude,
-                        lon: selection.longitude,
-                      );
-                    });
-                    _fetchBuildingAcessibilities(selection.id);
-                  },
-                ),
-                Row(
-                  children: [
-                    FilledButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _selectedBuilding = null;
-                          _showAllVisualRoutes = true;
-                        });
-                        _fetchAllVisualRoutes();
-                      },
-                      icon: Icon(Icons.visibility_outlined),
-                      label: const Text('Rotas visuais'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                if (_isDirectionsMode) ...[
+                  MapSearchBar(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<Building>.empty();
+                      }
+                      return _buildingEntries.where((Building option) {
+                        return option.name.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
+                      });
+                    },
+                    onSelected: (Building selection) {
+                      FocusScope.of(context).unfocus();
+                      setState(() {
+                        _startBuilding = selection;
+                      });
+                      _fetchDirections();
+                    },
+                    onClear: () {
+                      setState(() {
+                        _startBuilding = null;
+                      });
+                      _clearDirections();
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  MapSearchBar(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<Building>.empty();
+                      }
+                      return _buildingEntries.where((Building option) {
+                        return option.name.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
+                      });
+                    },
+                    onSelected: (Building selection) {
+                      FocusScope.of(context).unfocus();
+                      setState(() {
+                        _endBuilding = selection;
+                      });
+                      _fetchDirections();
+                    },
+                    onClear: () {
+                      setState(() {
+                        _endBuilding = null;
+                      });
+                      _clearDirections();
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      FilledButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _isDirectionsMode = false;
+                            _startBuilding = null;
+                            _endBuilding = null;
+                          });
+                          _clearDirections();
+                        },
+                        icon: const Icon(Icons.close),
+                        label: const Text('Sair do Modo Rotas'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ] else ...[
+                  MapSearchBar(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<Building>.empty();
+                      }
+                      return _buildingEntries.where((Building option) {
+                        return option.name.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
+                      });
+                    },
+                    onSelected: (Building selection) {
+                      FocusScope.of(context).unfocus();
+
+                      setState(() {
+                        _showAllVisualRoutes = false;
+                        _selectedBuilding = selection.name;
+
+                        _targetCenter = Geographic(
+                          lat: selection.latitude,
+                          lon: selection.longitude,
+                        );
+                      });
+                      _fetchBuildingAcessibilities(selection.id);
+                    },
+                  ),
+                  Row(
+                    children: [
+                      FilledButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _selectedBuilding = null;
+                            _showAllVisualRoutes = true;
+                          });
+                          _fetchAllVisualRoutes();
+                        },
+                        icon: const Icon(Icons.visibility_outlined),
+                        label: const Text('Rotas visuais'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _isDirectionsMode = true;
+                            _selectedBuilding = null;
+                          });
+                        },
+                        icon: const Icon(Icons.directions),
+                        label: const Text('Rotas'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
