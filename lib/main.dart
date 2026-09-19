@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Colors
-import 'app_colors.dart';
+import 'package:usp_acessivel/core/theme/app_colors.dart';
 
-import 'building_repository.dart';
+import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
 
 // Pages
-import 'map_page.dart';
-import 'institutes_page.dart';
+import 'package:usp_acessivel/features/map/pages/map_page.dart';
+import 'package:usp_acessivel/features/institutes/pages/institutes_page.dart';
 
 void main() async {
   // Needed in order to call getBuildingEntries() before runApp().

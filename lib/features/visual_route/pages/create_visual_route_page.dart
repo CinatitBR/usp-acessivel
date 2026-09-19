@@ -1,29 +1,21 @@
+import 'package:usp_acessivel/features/visual_route/services/visual_route_service.dart';
+
+import 'package:usp_acessivel/features/visual_route/models/route_step_model.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:dio/dio.dart';
+
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:image_picker/image_picker.dart';
-import 'app_colors.dart';
+import 'package:usp_acessivel/core/theme/app_colors.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-import 'building_repository.dart';
 
-class RouteStep {
-  final String id; // Changed from 'int order' to a unique string ID
-  // final int order;
-  final XFile image;
-  final TextEditingController descriptionController;
-
-  RouteStep({
-    required this.id,
-    required this.image,
-    required this.descriptionController,
-  });
-}
+import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
 
 class CreateVisualRoutePage extends StatefulWidget {
   const CreateVisualRoutePage({super.key});
@@ -505,11 +497,8 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
         'images': imageFiles,
       });
 
-      final dio = Dio();
-      final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8787';
-      final String endpoint = '$baseUrl/visualRoutes';
-
-      final response = await dio.post(endpoint, data: formData);
+      final visualRouteService = VisualRouteService();
+      await visualRouteService.createVisualRouteFormData(formData);
 
       setState(() => _isSaving = false);
       // Dismiss the loading dialog before triggering snackbars or navigation
@@ -517,29 +506,19 @@ class _CreateVisualRoutePageState extends State<CreateVisualRoutePage> {
         Navigator.of(context, rootNavigator: true).pop();
       }
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Rota salva com sucesso!',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(color: Colors.white),
-              ),
-              backgroundColor: Colors.green,
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Rota salva com sucesso!',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.white),
             ),
-          );
-          _onCancel();
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Erro ao salvar rota: ${response.statusCode}'),
-            ),
-          );
-        }
+            backgroundColor: Colors.green,
+          ),
+        );
+        _onCancel();
       }
     } catch (e) {
       setState(() => _isSaving = false);

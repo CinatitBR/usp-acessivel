@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:usp_acessivel/app_bottom_sheet.dart';
+import 'package:usp_acessivel/core/widgets/app_bottom_sheet.dart';
 
 class VisualRoutePage extends StatefulWidget {
   const VisualRoutePage({super.key});
