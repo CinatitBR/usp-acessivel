@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:usp_acessivel/features/map/models/building_model.dart';
 import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
+import 'package:usp_acessivel/features/map/services/directions_service.dart';
 
 import 'package:usp_acessivel/core/theme/app_colors.dart';
 
@@ -11,14 +12,11 @@ import 'package:usp_acessivel/features/map/widgets/main_map.dart';
 import 'package:usp_acessivel/features/map/widgets/map_search_bar.dart';
 import 'package:usp_acessivel/features/map/widgets/selected_building_bottom_sheet.dart';
 
-
-
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:usp_acessivel/features/visual_route/pages/dynamic_visual_route_page.dart';
 import 'package:usp_acessivel/features/visual_route/pages/create_visual_route_page.dart';
 import 'package:usp_acessivel/features/poi/pages/create_poi_page.dart';
-
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -38,6 +36,8 @@ class _MapPageState extends State<MapPage> {
   List<dynamic> _allVisualRoutes = [];
   Geographic? _targetCenter;
   List<Building> _buildingEntries = [];
+
+  FeatureCollection? directions;
 
   @override
   void initState() {
@@ -143,6 +143,23 @@ class _MapPageState extends State<MapPage> {
           _isLoadingRoutes = false;
         });
       }
+    }
+  }
+
+  void _fetchDirections() async {
+    try {
+      final directionsService = DirectionsService();
+      final result = await directionsService.directions(
+        'wheelchair',
+        -46.7317,
+        -23.55921,
+        -46.72733,
+        -23.55764,
+      );
+
+      setState(() => directions = result);
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -410,4 +427,3 @@ class _MapPageState extends State<MapPage> {
     );
   }
 }
-
