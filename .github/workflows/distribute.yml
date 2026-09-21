@@ -47,21 +47,26 @@ jobs:
 
       - name: Determine Target Group & Release Notes
         id: release_info
+        env:
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          CUSTOM_NOTES: ${{ inputs.custom_release_notes }}
         run: |
+          DELIMITER=$(openssl rand -hex 8)
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             echo "group=android-testers" >> "$GITHUB_OUTPUT"
             echo "notes=Milestone Release: ${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "group=${{ inputs.release_group }}" >> "$GITHUB_OUTPUT"
-            NOTES="${{ inputs.custom_release_notes }}"
-            if [ -z "$NOTES" ]; then
-              NOTES="Manual trigger from branch ${{ github.ref_name }}"
-            fi
-            echo "notes=$NOTES" >> "$GITHUB_OUTPUT"
+            NOTES="${CUSTOM_NOTES:-Manual trigger from branch ${{ github.ref_name }}}"
+            echo "notes<<$DELIMITER" >> "$GITHUB_OUTPUT"
+            echo "$NOTES" >> "$GITHUB_OUTPUT"
+            echo "$DELIMITER" >> "$GITHUB_OUTPUT"
           else
             echo "group=android-testers" >> "$GITHUB_OUTPUT"
-            COMMIT_MSG="${{ github.event.head_commit.message }}"
-            echo "notes=Main build: ${COMMIT_MSG:-commit ${{ github.sha }}}" >> "$GITHUB_OUTPUT"
+            NOTES="${HEAD_COMMIT_MESSAGE:-Main build: commit ${{ github.sha }}}"
+            echo "notes<<$DELIMITER" >> "$GITHUB_OUTPUT"
+            echo "$NOTES" >> "$GITHUB_OUTPUT"
+            echo "$DELIMITER" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Restore Secret Files
