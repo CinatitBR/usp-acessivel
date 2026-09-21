@@ -1,0 +1,97 @@
+name: Distribute to Firebase App Distribution
+
+on:
+  # 1. Triggered on merge/push to main -> Deploys to android-testers
+  push:
+    branches:
+      - main
+    # 2. Triggered on tag push (e.g. v1.0.0) -> Deploys to beta-testers
+    tags:
+      - 'v*'
+
+  # 3. Manual trigger via GitHub UI with selectable target group
+  workflow_dispatch:
+    inputs:
+      release_group:
+        description: 'Target tester group in Firebase'
+        required: true
+        default: 'android-testers'
+        type: choice
+        options:
+          - android-testers
+      custom_release_notes:
+        description: 'Release notes (optional)'
+        required: false
+        default: ''
+
+jobs:
+  distribute:
+    name: Build & Distribute AAB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Determine Target Group & Release Notes
+        id: release_info
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "group=android-testers" >> "$GITHUB_OUTPUT"
+            echo "notes=Milestone Release: ${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "group=${{ inputs.release_group }}" >> "$GITHUB_OUTPUT"
+            NOTES="${{ inputs.custom_release_notes }}"
+            if [ -z "$NOTES" ]; then
+              NOTES="Manual trigger from branch ${{ github.ref_name }}"
+            fi
+            echo "notes=$NOTES" >> "$GITHUB_OUTPUT"
+          else
+            echo "group=android-testers" >> "$GITHUB_OUTPUT"
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+            echo "notes=Main build: ${COMMIT_MSG:-commit ${{ github.sha }}}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore Secret Files
+        run: |
+          # 1. Restore upload keystore into android/app/upload-keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+          # 2. Restore key.properties
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+
+          # 3. Restore google-services.json
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+
+          # 4. Restore env.production (required by lib/main.dart & pubspec.yaml assets)
+          echo "${{ secrets.ENV_PRODUCTION }}" > env.production
+          touch env.development
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Android App Bundle (AAB)
+        run: |
+          # Dynamically sets the build number to ensure Firebase receives an incremented versionCode
+          flutter build appbundle --release --build-number=${{ github.run_number }}
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: "1:1028609505456:android:ca41e4652bf899b387e375"
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: ${{ steps.release_info.outputs.group }}
+          file: build/app/outputs/bundle/release/app-release.aab
+          releaseNotes: ${{ steps.release_info.outputs.notes }}
