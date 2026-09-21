@@ -70,18 +70,23 @@ jobs:
           fi
 
       - name: Restore Secret Files
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
         run: |
           # 1. Restore upload keystore into android/app/upload-keystore.jks
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          printf "%s" "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
 
           # 2. Restore key.properties
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+          printf "%s\n" "$KEY_PROPERTIES" > android/key.properties
 
           # 3. Restore google-services.json
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+          printf "%s\n" "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
 
           # 4. Restore env.production (required by lib/main.dart & pubspec.yaml assets)
-          echo "${{ secrets.ENV_PRODUCTION }}" > env.production
+          printf "%s\n" "$ENV_PRODUCTION" > env.production
           touch env.development
 
       - name: Install Dependencies
