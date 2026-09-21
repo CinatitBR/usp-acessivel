@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:usp_acessivel/core/widgets/app_bottom_sheet.dart';
 import 'package:usp_acessivel/core/theme/app_colors.dart';
-import 'list_header.dart';
 import 'building_accessibilities_list.dart';
 import 'building_visual_routes_list.dart';
+
 class SelectedBuildingBottomSheet extends StatelessWidget {
   const SelectedBuildingBottomSheet({
     super.key,
@@ -25,28 +25,42 @@ class SelectedBuildingBottomSheet extends StatelessWidget {
     return AppBottomSheet(
       onDismissed: onDismissed,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
+        constraints: const BoxConstraints(maxWidth: 600),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 selectedBuilding,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: AppColors.primary[600],
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge!.copyWith(color: AppColors.primary[700]),
               ),
               const SizedBox(height: 16),
               if (isLoadingBuildingRoutes)
                 CircularProgressIndicator()
               else ...[
-                const ListHeader(title: 'Acessibilidade'),
+                Text(
+                  'Acessibilidade',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.neutral[800],
+                  ),
+                ),
+                const SizedBox(height: 4),
                 BuildingAccessibilitiesList(accessibilities: accessibilities),
                 const SizedBox(height: 16),
-                ListHeader(title: 'Rotas Visuais'),
+                Text(
+                  'Rotas Visuais',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.neutral[800],
+                  ),
+                ),
+                const SizedBox(height: 4),
                 BuildingVisualRoutesList(visualRoutes: visualRoutes),
               ],
             ],

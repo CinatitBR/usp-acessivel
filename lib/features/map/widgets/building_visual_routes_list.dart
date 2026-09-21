@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'list_item.dart';
 import 'package:usp_acessivel/core/theme/app_colors.dart';
 import 'package:usp_acessivel/features/visual_route/pages/dynamic_visual_route_page.dart';
+
 class BuildingVisualRoutesList extends StatelessWidget {
   const BuildingVisualRoutesList({super.key, required this.visualRoutes});
 
@@ -11,10 +12,7 @@ class BuildingVisualRoutesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (visualRoutes.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text('Nenhuma rota encontrada.'),
-      );
+      return Text('Nenhuma rota encontrada.');
     }
     return ListView.separated(
       shrinkWrap: true,
