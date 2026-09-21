@@ -1,7 +1,7 @@
 name: usp_acessivel
 description: "Aplicativo de mapa para tornar o campus da USP mais acessível."
 publish_to: "none"
-version: 0.1.0+2
+version: 0.1.0+3
 
 environment:
   sdk: ">=3.11.0 <4.0.0"
@@ -37,5 +37,5 @@ flutter:
     - assets/tiles/
     - assets/rotas-odonto/
     - assets/map-icons/
-    - .env.development
-    - .env.production
+    - env.development
+    - env.production

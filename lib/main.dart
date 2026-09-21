@@ -17,9 +17,9 @@ void main() async {
 
   // Load environment variables depending on debug/release mode.
   if (kReleaseMode) {
-    await dotenv.load(fileName: ".env.production");
+    await dotenv.load(fileName: "env.production");
   } else {
-    await dotenv.load(fileName: ".env.development");
+    await dotenv.load(fileName: "env.development");
   }
 
   // Parse the GeoJSON file of buildings in the background, and cache in memory

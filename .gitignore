@@ -54,3 +54,5 @@ connect_wifi.sh
 # Secret environment variables. Developers should create their own .env local files.
 .env.development
 .env.production
+env.development
+env.production

@@ -31,18 +31,18 @@ Duplicate the template file provided in the root directory to create both your d
 
 ```bash
 # Create development environment file
-cp .env.example .env.development
+cp env.example env.development
 
 # Create production environment file
-cp .env.example .env.production
+cp env.example env.production
 ```
 
 ### 2. Add your API Keys
 
-Open both `.env.development` and `.env.production` and replace the placeholder values with your respective environment keys (e.g., test variables in development, live production credentials in production):
+Open both `env.development` and `env.production` and replace the placeholder values with your respective environment keys (e.g., test variables in development, live production credentials in production):
 
 - **BASE_URL**: The main backend API URL (e.g., `https://example.com`). **Do not include a trailing slash.**
 - **STORAGE_BASE_URL**: The cloud storage bucket endpoint for user media assets. **Do not include a trailing slash.**
 - **OPEN_ROUTE_SERVICE_API_KEY**: Retrieve your routing engine key from the [OpenRouteService Dashboard](https://openrouteservice.org). Remember to apply IP or HTTP referrer restrictions for your production keys.
 
-> ⚠️ **Important**: Never commit `.env.development` or `.env.production` to Git. If you introduce a new variable, remember to update the public `.env.example` file with the corresponding placeholder.
+> ⚠️ **Important**: Never commit `env.development` or `env.production` to Git. If you introduce a new variable, remember to update the public `env.example` file with the corresponding placeholder.
