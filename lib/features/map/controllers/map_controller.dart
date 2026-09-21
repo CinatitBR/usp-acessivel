@@ -17,10 +17,10 @@ class MapController extends ChangeNotifier {
     BuildingService? buildingService,
     DirectionsService? directionsService,
     VisualRouteService? visualRouteService,
-  })  : _buildingRepository = buildingRepository ?? BuildingRepository.instance,
-        _buildingService = buildingService ?? BuildingService(),
-        _directionsService = directionsService ?? DirectionsService(),
-        _visualRouteService = visualRouteService ?? VisualRouteService();
+  }) : _buildingRepository = buildingRepository ?? BuildingRepository.instance,
+       _buildingService = buildingService ?? BuildingService(),
+       _directionsService = directionsService ?? DirectionsService(),
+       _visualRouteService = visualRouteService ?? VisualRouteService();
 
   // Buildings data & selection
   List<Building> buildingEntries = [];
@@ -44,6 +44,9 @@ class MapController extends ChangeNotifier {
   Map<String, dynamic>? routeGeoJson;
   LngLatBounds? routeBoundingBox;
 
+  // Actions
+  bool showActionsSheet = false;
+
   /// Loads the initial list of buildings from repository
   Future<void> loadData() async {
     buildingEntries = await _buildingRepository.getBuildingEntries();
@@ -58,7 +61,10 @@ class MapController extends ChangeNotifier {
     );
 
     if (building != null) {
+      // Close other sheets, if any of them are open
       showAllVisualRoutes = false;
+      showActionsSheet = false;
+
       selectedBuilding = building.name;
       notifyListeners();
       fetchBuildingAccessibilities(building.id);
@@ -199,6 +205,20 @@ class MapController extends ChangeNotifier {
   void clearDirections() {
     routeGeoJson = null;
     routeBoundingBox = null;
+    notifyListeners();
+  }
+
+  void openActionsSheet() {
+    // Close other sheets, if any of them are open
+    selectedBuilding = null;
+    showAllVisualRoutes = false;
+
+    showActionsSheet = true;
+    notifyListeners();
+  }
+
+  void dismissActionsSheet() {
+    showActionsSheet = false;
     notifyListeners();
   }
 }

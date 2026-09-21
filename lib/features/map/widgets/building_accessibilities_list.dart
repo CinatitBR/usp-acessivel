@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'list_item.dart';
 import 'package:usp_acessivel/core/theme/app_colors.dart';
+
 class BuildingAccessibilitiesList extends StatelessWidget {
   const BuildingAccessibilitiesList({super.key, required this.accessibilities});
 
@@ -41,10 +42,7 @@ class BuildingAccessibilitiesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (accessibilities.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text('Nenhum ponto de acessibilidade encontrado.'),
-      );
+      return Text('Nenhum ponto de acessibilidade encontrado.');
     }
     return ListView.separated(
       shrinkWrap: true,

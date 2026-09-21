@@ -1,66 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:usp_acessivel/core/theme/app_colors.dart';
-import 'package:usp_acessivel/features/poi/pages/create_poi_page.dart';
-import 'package:usp_acessivel/features/visual_route/pages/create_visual_route_page.dart';
 
 class MapCommunityActionButton extends StatelessWidget {
-  const MapCommunityActionButton({super.key});
+  const MapCommunityActionButton({super.key, this.onPressed});
 
-  void _showActionModal(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) {
-        return SizedBox(
-          height: 200,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 250),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    title: const Text('Criar rota visual'),
-                    subtitle: const Text('Envie uma rota visual'),
-                    trailing: const Icon(Icons.chevron_right_sharp),
-                    splashColor: AppColors.neutral[300],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const CreateVisualRoutePage(),
-                        ),
-                      );
-                    },
-                  ),
-                  ListTile(
-                    title: const Text('Criar Ponto de Acessibilidade'),
-                    subtitle: const Text('Cadastre um novo ponto'),
-                    trailing: const Icon(Icons.chevron_right_sharp),
-                    splashColor: AppColors.neutral[300],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const CreatePoiPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +28,7 @@ class MapCommunityActionButton extends StatelessWidget {
             width: 60,
           ),
         ),
-        onPressed: () => _showActionModal(context),
+        onPressed: onPressed,
       ),
     );
   }
