@@ -5,7 +5,7 @@ class AppBottomSheet extends StatefulWidget {
   const AppBottomSheet({
     super.key,
     required this.child,
-    this.initialChildSize = 0.3,
+    this.initialChildSize = 0.15,
     this.maxChildSize = 0.98,
     this.onDismissed,
   });
@@ -112,7 +112,8 @@ class _AppBottomSheetState extends State<AppBottomSheet>
                           controller: scrollController,
                           child: Column(
                             children: [
-                              _SheetHeader(onClose: _animateClose),
+                              SizedBox(height: 8),
+                              Center(child: _SheetHandle()),
                               widget.child,
                             ],
                           ),
@@ -135,7 +136,7 @@ class _SheetContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.neutral[50],
         borderRadius: const BorderRadius.only(
@@ -156,51 +157,18 @@ class _SheetContainer extends StatelessWidget {
   }
 }
 
-class _SheetHeader extends StatelessWidget {
-  const _SheetHeader({required this.onClose});
-
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(height: 54),
-        const _SheetHandle(),
-        Positioned(
-          top: 8,
-          right: 16,
-          child: IconButton(
-            icon: Icon(
-              Icons.close_rounded,
-              size: 28,
-              color: AppColors.neutral[500],
-            ),
-            onPressed: onClose,
-            padding: const EdgeInsets.all(6),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 // Simple drag handle element
 class _SheetHandle extends StatelessWidget {
   const _SheetHandle();
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 16),
-        width: 70,
-        height: 5,
-        decoration: BoxDecoration(
-          color: AppColors.neutral[300],
-          borderRadius: BorderRadius.circular(2.5),
-        ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.neutral[300],
+        borderRadius: BorderRadius.circular(2.5),
       ),
+      child: const SizedBox(width: 50, height: 4),
     );
   }
 }
