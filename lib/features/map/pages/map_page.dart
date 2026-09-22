@@ -6,11 +6,6 @@ import 'package:usp_acessivel/features/map/widgets/map_community_action_button.d
 import 'package:usp_acessivel/features/map/widgets/map_top_overlay.dart';
 import 'package:usp_acessivel/features/map/widgets/selected_building_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/visual_routes_bottom_sheet.dart';
-import 'package:usp_acessivel/core/widgets/app_bottom_sheet.dart';
-import 'package:usp_acessivel/core/theme/app_colors.dart';
-
-import 'package:usp_acessivel/features/visual_route/pages/create_visual_route_page.dart';
-import 'package:usp_acessivel/features/poi/pages/create_poi_page.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});

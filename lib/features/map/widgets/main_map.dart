@@ -9,7 +9,6 @@ import 'package:usp_acessivel/core/theme/app_colors.dart';
 import 'package:usp_acessivel/core/utils/utils.dart';
 
 class MainMap extends StatefulWidget {
-
   const MainMap({
     super.key,
     required this.onSelect,
@@ -47,8 +46,12 @@ class _MainMapState extends State<MainMap> {
       _controller.moveCamera(center: widget.targetCenter, zoom: 17);
     }
 
-    if (widget.routeBounds != null && widget.routeBounds != oldWidget.routeBounds) {
-      _controller.fitBounds(bounds: widget.routeBounds!, padding: const EdgeInsets.all(50));
+    if (widget.routeBounds != null &&
+        widget.routeBounds != oldWidget.routeBounds) {
+      _controller.fitBounds(
+        bounds: widget.routeBounds!,
+        padding: const EdgeInsets.all(50),
+      );
     }
 
     if (widget.routeGeoJson != oldWidget.routeGeoJson) {
@@ -73,7 +76,6 @@ class _MainMapState extends State<MainMap> {
       print('Error updating route line: $e');
     }
   }
-
 
   void _handleMapClick(MapEventClick event) async {
     // Check for map reports first
@@ -216,9 +218,13 @@ void _handleStyleLoaded(StyleController style) async {
     color: AppColors.primary,
     size: 24,
   );
+  // await style.addImageFromAssets(
+  //   id: 'school-icon',
+  //   asset: 'assets/map-icons/school-icon.png',
+  // );
   await style.addImageFromAssets(
     id: 'school-icon',
-    asset: 'assets/map-icons/school-icon.png',
+    asset: 'assets/map-icons/school-icon-variation-1.png',
   );
   await style.addImageFromIconData(
     id: 'report-icon',
@@ -265,7 +271,6 @@ void _handleStyleLoaded(StyleController style) async {
     ),
   );
 
-
   // Map reports layer
   await style.addLayer(
     SymbolStyleLayer(
@@ -290,10 +295,10 @@ void _handleStyleLoaded(StyleController style) async {
         'text-field': ['get', 'display_name'],
         'text-font': ['Noto Sans Italic'],
         'icon-image': 'school-icon', // ✅ FIXED: Use the icon we created
-        'icon-size': 0.5,
+        // 'icon-size': 0.5,
         'text-size': 12,
         'text-anchor': 'top',
-        'text-offset': [0, 1],
+        'text-offset': [0, 1.1],
         'text-max-width': 8,
         'symbol-placement': 'point',
         // 🛠️ EXTRA INSURANCE: Prevent collision engine from hiding symbols
@@ -304,7 +309,8 @@ void _handleStyleLoaded(StyleController style) async {
       },
       paint: {
         // ✅ ADDED: Paint properties were missing!
-        'text-color': '#666',
+        // 'text-color': '#666',
+        'text-color': '#1E5AE8',
         'text-halo-color': '#FFFFFF',
         'text-halo-width': 1.5,
       },
