@@ -5,10 +5,7 @@ import 'package:usp_acessivel/features/map/models/building_model.dart';
 import 'package:usp_acessivel/features/map/widgets/map_search_bar.dart';
 
 class MapTopOverlay extends StatelessWidget {
-  const MapTopOverlay({
-    super.key,
-    required this.controller,
-  });
+  const MapTopOverlay({super.key, required this.controller});
 
   final MapController controller;
 
@@ -25,88 +22,94 @@ class MapTopOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            if (controller.isDirectionsMode) ...[
-              MapSearchBar(
-                optionsBuilder: _filterBuildings,
-                onSelected: (Building selection) {
-                  FocusScope.of(context).unfocus();
-                  controller.setStartBuilding(selection);
-                },
-                onClear: () => controller.setStartBuilding(null),
-              ),
-              const SizedBox(height: 8),
-              MapSearchBar(
-                optionsBuilder: _filterBuildings,
-                onSelected: (Building selection) {
-                  FocusScope.of(context).unfocus();
-                  controller.setEndBuilding(selection);
-                },
-                onClear: () => controller.setEndBuilding(null),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  FilledButton.icon(
-                    onPressed: controller.exitDirectionsMode,
-                    icon: const Icon(Icons.close),
-                    label: const Text('Sair do Modo Rotas'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (controller.isDirectionsMode) ...[
+                MapSearchBar(
+                  optionsBuilder: _filterBuildings,
+                  onSelected: (Building selection) {
+                    FocusScope.of(context).unfocus();
+                    controller.setStartBuilding(selection);
+                  },
+                  onClear: () => controller.setStartBuilding(null),
+                ),
+                const SizedBox(height: 8),
+                MapSearchBar(
+                  optionsBuilder: _filterBuildings,
+                  onSelected: (Building selection) {
+                    FocusScope.of(context).unfocus();
+                    controller.setEndBuilding(selection);
+                  },
+                  onClear: () => controller.setEndBuilding(null),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    FilledButton.icon(
+                      onPressed: controller.exitDirectionsMode,
+                      icon: const Icon(Icons.close),
+                      label: const Text('Sair do Modo Rotas'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ] else ...[
-              MapSearchBar(
-                optionsBuilder: _filterBuildings,
-                onSelected: (Building selection) {
-                  FocusScope.of(context).unfocus();
-                  controller.selectBuildingFromSearch(selection);
-                },
-              ),
-              Row(
-                children: [
-                  FilledButton.icon(
-                    onPressed: controller.openAllVisualRoutes,
-                    icon: const Icon(Icons.visibility_outlined),
-                    label: const Text('Rotas visuais'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                  ],
+                ),
+              ] else ...[
+                MapSearchBar(
+                  optionsBuilder: _filterBuildings,
+                  onSelected: (Building selection) {
+                    FocusScope.of(context).unfocus();
+                    controller.selectBuildingFromSearch(selection);
+                  },
+                ),
+                Row(
+                  children: [
+                    FilledButton.icon(
+                      onPressed: controller.openAllVisualRoutes,
+                      icon: const Icon(Icons.visibility_outlined),
+                      label: const Text('Rotas visuais'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: controller.enterDirectionsMode,
-                    icon: const Icon(Icons.directions),
-                    label: const Text('Rotas'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: controller.enterDirectionsMode,
+                      icon: const Icon(Icons.directions),
+                      label: const Text('Rotas'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

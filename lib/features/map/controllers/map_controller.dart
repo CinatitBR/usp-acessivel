@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:usp_acessivel/features/map/models/building_model.dart';
+import 'package:usp_acessivel/features/map/models/route_accessibility_point.dart';
 import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
 import 'package:usp_acessivel/features/map/services/building_service.dart';
 import 'package:usp_acessivel/features/map/services/directions_service.dart';
@@ -43,6 +44,11 @@ class MapController extends ChangeNotifier {
   Building? endBuilding;
   Map<String, dynamic>? routeGeoJson;
   LngLatBounds? routeBoundingBox;
+
+  // Route Accessibility
+  List<RouteAccessibilityPoint> routeAccessibilityPoints = [];
+  String? selectedRouteAccessibilityPointId;
+  bool showRouteAccessibilitySheet = false;
 
   // Actions
   bool showActionsSheet = false;
@@ -152,6 +158,7 @@ class MapController extends ChangeNotifier {
     startBuilding = null;
     endBuilding = null;
     clearDirections();
+    _updateRouteAccessibility();
   }
 
   void setStartBuilding(Building? building) {
@@ -161,6 +168,7 @@ class MapController extends ChangeNotifier {
     } else {
       fetchDirections();
     }
+    _updateRouteAccessibility();
     notifyListeners();
   }
 
@@ -171,6 +179,45 @@ class MapController extends ChangeNotifier {
     } else {
       fetchDirections();
     }
+    _updateRouteAccessibility();
+    notifyListeners();
+  }
+
+  void _updateRouteAccessibility() {
+    if (isDirectionsMode &&
+        startBuilding?.id == 'ime' &&
+        endBuilding?.id == 'poli') {
+      routeAccessibilityPoints = RouteAccessibilityPoint.mockImeToPoliPoints;
+      showRouteAccessibilitySheet = true;
+    } else {
+      routeAccessibilityPoints = [];
+      selectedRouteAccessibilityPointId = null;
+      showRouteAccessibilitySheet = false;
+    }
+  }
+
+  void selectRouteAccessibilityPoint(String? id) {
+    selectedRouteAccessibilityPointId = id;
+    if (id != null) {
+      final point = routeAccessibilityPoints.where((p) => p.id == id).firstOrNull;
+      if (point != null) {
+        targetCenter = Geographic(
+          lat: point.latitude,
+          lon: point.longitude,
+        );
+      }
+      showRouteAccessibilitySheet = true;
+    }
+    notifyListeners();
+  }
+
+  void openRouteAccessibilitySheet() {
+    showRouteAccessibilitySheet = true;
+    notifyListeners();
+  }
+
+  void dismissRouteAccessibilitySheet() {
+    showRouteAccessibilitySheet = false;
     notifyListeners();
   }
 
@@ -205,6 +252,7 @@ class MapController extends ChangeNotifier {
   void clearDirections() {
     routeGeoJson = null;
     routeBoundingBox = null;
+    _updateRouteAccessibility();
     notifyListeners();
   }
 

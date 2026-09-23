@@ -7,9 +7,9 @@ import 'package:maplibre/maplibre.dart';
 
 import 'package:usp_acessivel/core/theme/app_colors.dart';
 import 'package:usp_acessivel/core/utils/utils.dart';
+import 'package:usp_acessivel/features/map/models/route_accessibility_point.dart';
 
 class MainMap extends StatefulWidget {
-
   const MainMap({
     super.key,
     required this.onSelect,
@@ -17,6 +17,8 @@ class MainMap extends StatefulWidget {
     this.onReportSelect,
     this.routeGeoJson,
     this.routeBounds,
+    this.routeAccessibilityPoints = const [],
+    this.onRouteAccessibilityPointSelect,
   });
 
   final void Function(String) onSelect;
@@ -24,6 +26,8 @@ class MainMap extends StatefulWidget {
   final Geographic? targetCenter;
   final Map<String, dynamic>? routeGeoJson;
   final LngLatBounds? routeBounds;
+  final List<RouteAccessibilityPoint> routeAccessibilityPoints;
+  final ValueChanged<String>? onRouteAccessibilityPointSelect;
 
   @override
   State<MainMap> createState() => _MainMapState();
@@ -47,12 +51,46 @@ class _MainMapState extends State<MainMap> {
       _controller.moveCamera(center: widget.targetCenter, zoom: 17);
     }
 
-    if (widget.routeBounds != null && widget.routeBounds != oldWidget.routeBounds) {
-      _controller.fitBounds(bounds: widget.routeBounds!, padding: const EdgeInsets.all(50));
+    if (widget.routeBounds != null &&
+        widget.routeBounds != oldWidget.routeBounds) {
+      _controller.fitBounds(
+        bounds: widget.routeBounds!,
+        padding: const EdgeInsets.all(50),
+      );
     }
 
     if (widget.routeGeoJson != oldWidget.routeGeoJson) {
       _updateRouteLine();
+    }
+
+    if (widget.routeAccessibilityPoints != oldWidget.routeAccessibilityPoints) {
+      _updateRouteAccessibilitySource();
+    }
+  }
+
+  Future<void> _updateRouteAccessibilitySource() async {
+    try {
+      final features = widget.routeAccessibilityPoints.map((point) {
+        return {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [point.longitude, point.latitude],
+          },
+          'properties': {
+            'id': point.id,
+            'icon': point.iconId,
+            'title': point.title,
+          },
+        };
+      }).toList();
+
+      await _controller.style?.updateGeoJsonSource(
+        id: 'route_accessibility_points',
+        data: jsonEncode({'type': 'FeatureCollection', 'features': features}),
+      );
+    } catch (e) {
+      debugPrint('Error updating route accessibility points: $e');
     }
   }
 
@@ -74,8 +112,21 @@ class _MainMapState extends State<MainMap> {
     }
   }
 
-
   void _handleMapClick(MapEventClick event) async {
+    // Check for route accessibility points first
+    final featuresAccessibility = _controller.featuresAtPoint(
+      event.screenPoint,
+      layerIds: ['route_accessibility_layer'],
+    );
+    if (featuresAccessibility.isNotEmpty) {
+      final pointFeature = featuresAccessibility.first;
+      final pointId = pointFeature.properties['id'] as String?;
+      if (pointId != null && widget.onRouteAccessibilityPointSelect != null) {
+        widget.onRouteAccessibilityPointSelect!(pointId);
+      }
+      return;
+    }
+
     // Check for map reports first
     final featuresReports = _controller.featuresAtPoint(
       event.screenPoint,
@@ -204,6 +255,15 @@ void _handleStyleLoaded(StyleController style) async {
       data: mapReportsFeatureCollection.toString(),
     ),
   );
+
+  // Route accessibility source
+  await style.addSource(
+    GeoJsonSource(
+      id: 'route_accessibility_points',
+      data: '{"type": "FeatureCollection", "features": []}',
+    ),
+  );
+
   // --- Images/Icons ---
   await style.addImageFromAssets(
     id: 'concreto-escuro',
@@ -216,6 +276,10 @@ void _handleStyleLoaded(StyleController style) async {
     color: AppColors.primary,
     size: 24,
   );
+  // await style.addImageFromAssets(
+  //   id: 'school-icon',
+  //   asset: 'assets/map-icons/school-icon.png',
+  // );
   await style.addImageFromAssets(
     id: 'school-icon',
     asset: 'assets/map-icons/school-icon.png',
@@ -224,6 +288,18 @@ void _handleStyleLoaded(StyleController style) async {
     id: 'report-icon',
     iconData: Icons.stairs,
     color: Colors.red,
+    size: 32,
+  );
+  await style.addImageFromIconData(
+    id: 'accessibility-warning-icon',
+    iconData: Icons.warning_amber_rounded,
+    color: AppColors.warning,
+    size: 32,
+  );
+  await style.addImageFromIconData(
+    id: 'accessibility-danger-icon',
+    iconData: Icons.error_outline_rounded,
+    color: AppColors.error,
     size: 32,
   );
   // --- Layers ---
@@ -265,7 +341,6 @@ void _handleStyleLoaded(StyleController style) async {
     ),
   );
 
-
   // Map reports layer
   await style.addLayer(
     SymbolStyleLayer(
@@ -281,6 +356,20 @@ void _handleStyleLoaded(StyleController style) async {
     ),
   );
 
+  // Route accessibility layer
+  await style.addLayer(
+    SymbolStyleLayer(
+      sourceId: 'route_accessibility_points',
+      id: 'route_accessibility_layer',
+      layout: {
+        'icon-image': ['get', 'icon'],
+        'icon-size': 1.0,
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      minZoom: 13,
+    ),
+  );
   // Buildings layer - FIXED
   await style.addLayer(
     SymbolStyleLayer(
@@ -293,7 +382,7 @@ void _handleStyleLoaded(StyleController style) async {
         'icon-size': 0.5,
         'text-size': 12,
         'text-anchor': 'top',
-        'text-offset': [0, 1],
+        'text-offset': [0, 1.1],
         'text-max-width': 8,
         'symbol-placement': 'point',
         // 🛠️ EXTRA INSURANCE: Prevent collision engine from hiding symbols
@@ -304,7 +393,8 @@ void _handleStyleLoaded(StyleController style) async {
       },
       paint: {
         // ✅ ADDED: Paint properties were missing!
-        'text-color': '#666',
+        // 'text-color': '#666',
+        'text-color': '#1E5AE8',
         'text-halo-color': '#FFFFFF',
         'text-halo-width': 1.5,
       },

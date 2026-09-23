@@ -4,13 +4,10 @@ import 'package:usp_acessivel/features/map/widgets/community_actions_bottom_shee
 import 'package:usp_acessivel/features/map/widgets/main_map.dart';
 import 'package:usp_acessivel/features/map/widgets/map_community_action_button.dart';
 import 'package:usp_acessivel/features/map/widgets/map_top_overlay.dart';
+import 'package:usp_acessivel/features/map/widgets/route_accessibility_bottom_sheet.dart';
+import 'package:usp_acessivel/features/map/widgets/route_accessibility_toggle_button.dart';
 import 'package:usp_acessivel/features/map/widgets/selected_building_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/visual_routes_bottom_sheet.dart';
-import 'package:usp_acessivel/core/widgets/app_bottom_sheet.dart';
-import 'package:usp_acessivel/core/theme/app_colors.dart';
-
-import 'package:usp_acessivel/features/visual_route/pages/create_visual_route_page.dart';
-import 'package:usp_acessivel/features/poi/pages/create_poi_page.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -71,11 +68,15 @@ class _MapPageState extends State<MapPage> {
               targetCenter: _controller.targetCenter,
               routeGeoJson: _controller.routeGeoJson,
               routeBounds: _controller.routeBoundingBox,
+              routeAccessibilityPoints: _controller.routeAccessibilityPoints,
+              onRouteAccessibilityPointSelect:
+                  _controller.selectRouteAccessibilityPoint,
               onReportSelect: _showReportDialog,
               onSelect: _controller.selectBuilding,
             ),
             MapTopOverlay(controller: _controller),
-            MapCommunityActionButton(onPressed: _controller.openActionsSheet),
+            if (_controller.isDirectionsMode == false)
+              MapCommunityActionButton(onPressed: _controller.openActionsSheet),
             if (_controller.selectedBuilding != null)
               SelectedBuildingBottomSheet(
                 selectedBuilding: _controller.selectedBuilding!,
@@ -94,6 +95,22 @@ class _MapPageState extends State<MapPage> {
             if (_controller.showActionsSheet)
               CommunityActionsBottomSheet(
                 onDismissed: _controller.dismissActionsSheet,
+              ),
+            if (_controller.isDirectionsMode &&
+                _controller.routeAccessibilityPoints.isNotEmpty &&
+                _controller.showRouteAccessibilitySheet)
+              RouteAccessibilityBottomSheet(
+                points: _controller.routeAccessibilityPoints,
+                selectedPointId: _controller.selectedRouteAccessibilityPointId,
+                onPointSelected: _controller.selectRouteAccessibilityPoint,
+                onDismissed: _controller.dismissRouteAccessibilitySheet,
+              ),
+            if (_controller.isDirectionsMode &&
+                _controller.routeAccessibilityPoints.isNotEmpty &&
+                !_controller.showRouteAccessibilitySheet)
+              RouteAccessibilityToggleButton(
+                pointCount: _controller.routeAccessibilityPoints.length,
+                onPressed: _controller.openRouteAccessibilitySheet,
               ),
           ],
         );
