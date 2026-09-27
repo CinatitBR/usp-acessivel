@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:usp_acessivel/features/map/models/building_model.dart';
+import 'package:usp_acessivel/features/map/models/map_style.dart';
 import 'package:usp_acessivel/features/map/models/route_accessibility_point.dart';
 import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
 import 'package:usp_acessivel/features/map/services/building_service.dart';
@@ -22,6 +23,9 @@ class MapController extends ChangeNotifier {
        _buildingService = buildingService ?? BuildingService(),
        _directionsService = directionsService ?? DirectionsService(),
        _visualRouteService = visualRouteService ?? VisualRouteService();
+
+  // Map style (Basemap)
+  AppMapStyle currentMapStyle = AppMapStyle.liberty;
 
   // Buildings data & selection
   List<Building> buildingEntries = [];
@@ -55,6 +59,13 @@ class MapController extends ChangeNotifier {
 
   // Actions
   bool showActionsSheet = false;
+
+  /// Sets the active basemap style
+  void setMapStyle(AppMapStyle style) {
+    if (currentMapStyle == style) return;
+    currentMapStyle = style;
+    notifyListeners();
+  }
 
   /// Loads the initial list of buildings from repository
   Future<void> loadData() async {

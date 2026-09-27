@@ -4,6 +4,7 @@ import 'package:usp_acessivel/features/map/widgets/bus_stop_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/community_actions_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/main_map.dart';
 import 'package:usp_acessivel/features/map/widgets/map_community_action_button.dart';
+import 'package:usp_acessivel/features/map/widgets/map_style_button.dart';
 import 'package:usp_acessivel/features/map/widgets/map_top_overlay.dart';
 import 'package:usp_acessivel/features/map/widgets/route_accessibility_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/route_accessibility_toggle_button.dart';
@@ -75,8 +76,14 @@ class _MapPageState extends State<MapPage> {
               onReportSelect: _showReportDialog,
               onSelect: _controller.selectBuilding,
               onBusStopSelect: _controller.selectBusStop,
+              styleUrl: _controller.currentMapStyle.url,
             ),
             MapTopOverlay(controller: _controller),
+            MapStyleButton(
+              currentStyle: _controller.currentMapStyle,
+              onStyleSelected: _controller.setMapStyle,
+              bottom: 104,
+            ),
             if (_controller.isDirectionsMode == false)
               MapCommunityActionButton(onPressed: _controller.openActionsSheet),
             if (_controller.selectedBusStop != null)
