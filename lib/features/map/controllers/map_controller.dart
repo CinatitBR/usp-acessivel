@@ -28,6 +28,9 @@ class MapController extends ChangeNotifier {
   String? selectedBuilding;
   Geographic? targetCenter;
 
+  // Bus stop selection
+  Map<String, dynamic>? selectedBusStop;
+
   // Building accessibility data
   bool isLoadingBuildingAccessibilities = false;
   List<dynamic> buildingVisualRoutes = [];
@@ -61,6 +64,7 @@ class MapController extends ChangeNotifier {
 
   /// Handles selecting a building by name (e.g. from map tap)
   void selectBuilding(String? name) {
+    selectedBusStop = null;
     final building = buildingEntries.cast<Building?>().firstWhere(
       (b) => b?.name == name,
       orElse: () => null,
@@ -85,6 +89,7 @@ class MapController extends ChangeNotifier {
 
   /// Handles selecting a building from search bar suggestions
   void selectBuildingFromSearch(Building selection) {
+    selectedBusStop = null;
     showAllVisualRoutes = false;
     selectedBuilding = selection.name;
     targetCenter = Geographic(
@@ -97,6 +102,19 @@ class MapController extends ChangeNotifier {
 
   void dismissSelectedBuilding() {
     selectedBuilding = null;
+    notifyListeners();
+  }
+
+  void selectBusStop(Map<String, dynamic> busStop) {
+    selectedBuilding = null;
+    showAllVisualRoutes = false;
+    showActionsSheet = false;
+    selectedBusStop = busStop;
+    notifyListeners();
+  }
+
+  void dismissSelectedBusStop() {
+    selectedBusStop = null;
     notifyListeners();
   }
 
@@ -122,6 +140,7 @@ class MapController extends ChangeNotifier {
 
   void openAllVisualRoutes() {
     selectedBuilding = null;
+    selectedBusStop = null;
     showAllVisualRoutes = true;
     notifyListeners();
     fetchAllVisualRoutes();
@@ -150,6 +169,7 @@ class MapController extends ChangeNotifier {
   void enterDirectionsMode() {
     isDirectionsMode = true;
     selectedBuilding = null;
+    selectedBusStop = null;
     notifyListeners();
   }
 

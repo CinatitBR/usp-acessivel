@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usp_acessivel/features/map/controllers/map_controller.dart';
+import 'package:usp_acessivel/features/map/widgets/bus_stop_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/community_actions_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/main_map.dart';
 import 'package:usp_acessivel/features/map/widgets/map_community_action_button.dart';
@@ -73,10 +74,16 @@ class _MapPageState extends State<MapPage> {
                   _controller.selectRouteAccessibilityPoint,
               onReportSelect: _showReportDialog,
               onSelect: _controller.selectBuilding,
+              onBusStopSelect: _controller.selectBusStop,
             ),
             MapTopOverlay(controller: _controller),
             if (_controller.isDirectionsMode == false)
               MapCommunityActionButton(onPressed: _controller.openActionsSheet),
+            if (_controller.selectedBusStop != null)
+              BusStopBottomSheet(
+                busStop: _controller.selectedBusStop!,
+                onDismissed: _controller.dismissSelectedBusStop,
+              ),
             if (_controller.selectedBuilding != null)
               SelectedBuildingBottomSheet(
                 selectedBuilding: _controller.selectedBuilding!,

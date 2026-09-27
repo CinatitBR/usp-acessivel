@@ -57,7 +57,7 @@ class CommunityActionsBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppBottomSheet(
       onDismissed: onDismissed,
-      initialChildSize: 0.6,
+      // initialChildSize: 0.6,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(

@@ -19,6 +19,7 @@ class MainMap extends StatefulWidget {
     this.routeBounds,
     this.routeAccessibilityPoints = const [],
     this.onRouteAccessibilityPointSelect,
+    this.onBusStopSelect,
   });
 
   final void Function(String) onSelect;
@@ -28,6 +29,7 @@ class MainMap extends StatefulWidget {
   final LngLatBounds? routeBounds;
   final List<RouteAccessibilityPoint> routeAccessibilityPoints;
   final ValueChanged<String>? onRouteAccessibilityPointSelect;
+  final ValueChanged<Map<String, dynamic>>? onBusStopSelect;
 
   @override
   State<MainMap> createState() => _MainMapState();
@@ -139,6 +141,21 @@ class _MainMapState extends State<MainMap> {
       return; // Stop processing other clicks if a report was clicked
     }
 
+    // Check for bus stops
+    final featuresBusStops = _controller.featuresAtPoint(
+      event.screenPoint,
+      layerIds: ['bus_stops_layer'],
+    );
+    if (featuresBusStops.isNotEmpty) {
+      final stopFeature = featuresBusStops.first;
+      if (widget.onBusStopSelect != null) {
+        widget.onBusStopSelect!(
+          Map<String, dynamic>.from(stopFeature.properties),
+        );
+      }
+      return;
+    }
+
     final features = _controller.featuresAtPoint(
       event.screenPoint,
       layerIds: ['ways', 'usp_buildings'],
@@ -232,9 +249,11 @@ void _handleStyleLoaded(StyleController style) async {
   final buildingsStr = await rootBundle.loadString(
     'data/usp_buildings.geojson',
   );
+  final busStopsStr = await rootBundle.loadString('data/bus-stops.geojson');
   // --- Sources ---
   await style.addSource(GeoJsonSource(id: 'ways', data: waysStr));
   await style.addSource(GeoJsonSource(id: 'buildings', data: buildingsStr));
+  await style.addSource(GeoJsonSource(id: 'bus_stops', data: busStopsStr));
   await style.addSource(
     GeoJsonSource(
       id: 'selected-way',
@@ -301,6 +320,39 @@ void _handleStyleLoaded(StyleController style) async {
     iconData: Icons.error_outline_rounded,
     color: AppColors.error,
     size: 32,
+  );
+  await style.addImageFromCanvas(
+    id: 'bus-stop-badge',
+    width: 64,
+    height: 64,
+    painter: (canvas) {
+      final bgPaint = Paint()
+        ..color = const Color(0xFF0284C7)
+        ..style = PaintingStyle.fill;
+      final borderPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0;
+
+      // Draw circular background and white border
+      canvas.drawCircle(const Offset(32, 32), 28, bgPaint);
+      canvas.drawCircle(const Offset(32, 32), 28, borderPaint);
+
+      // Draw bus icon centered in white
+      final tp = TextPainter(textDirection: TextDirection.ltr)
+        ..text = TextSpan(
+          text: String.fromCharCode(Icons.directions_bus_rounded.codePoint),
+          style: TextStyle(
+            fontSize: 32,
+            fontFamily: Icons.directions_bus_rounded.fontFamily,
+            package: Icons.directions_bus_rounded.fontPackage,
+            color: Colors.white,
+          ),
+        )
+        ..layout();
+
+      tp.paint(canvas, Offset((64 - tp.width) / 2, (64 - tp.height) / 2));
+    },
   );
   // --- Layers ---
   // Ways layer
@@ -385,11 +437,6 @@ void _handleStyleLoaded(StyleController style) async {
         'text-offset': [0, 1.1],
         'text-max-width': 8,
         'symbol-placement': 'point',
-        // 🛠️ EXTRA INSURANCE: Prevent collision engine from hiding symbols
-        'icon-allow-overlap': true,
-        'text-allow-overlap': true,
-        'icon-ignore-placement': true,
-        'text-ignore-placement': true,
       },
       paint: {
         // ✅ ADDED: Paint properties were missing!
@@ -398,7 +445,41 @@ void _handleStyleLoaded(StyleController style) async {
         'text-halo-color': '#FFFFFF',
         'text-halo-width': 1.5,
       },
-      minZoom: 14, // ✅ FIXED: Lowered from 15 to ensure visibility
+      minZoom: 15, // ✅ FIXED: Lowered from 15 to ensure visibility
+    ),
+  );
+
+  // Bus stops layer
+  await style.addLayer(
+    SymbolStyleLayer(
+      sourceId: 'bus_stops',
+      id: 'bus_stops_layer',
+      layout: {
+        'icon-image': 'bus-stop-badge',
+        'icon-size': 0.45,
+        'symbol-placement': 'point',
+        'icon-allow-overlap': false,
+        'icon-ignore-placement': false,
+        'text-field': [
+          'coalesce',
+          ['get', 'name'],
+          ['get', 'local_ref'],
+          '',
+        ],
+        'text-font': ['Noto Sans Regular'],
+        'text-size': 11,
+        'text-anchor': 'top',
+        'text-offset': [0, 1.1],
+        'text-max-width': 8,
+        'text-optional': true,
+        'text-allow-overlap': false,
+      },
+      paint: {
+        'text-color': '#0F172A',
+        'text-halo-color': '#FFFFFF',
+        'text-halo-width': 1.5,
+      },
+      minZoom: 16,
     ),
   );
 }
