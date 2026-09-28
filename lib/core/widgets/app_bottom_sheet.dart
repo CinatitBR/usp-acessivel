@@ -5,7 +5,7 @@ class AppBottomSheet extends StatefulWidget {
   const AppBottomSheet({
     super.key,
     required this.child,
-    this.initialChildSize = 0.15,
+    this.initialChildSize = 0.6,
     this.maxChildSize = 0.98,
     this.onDismissed,
   });

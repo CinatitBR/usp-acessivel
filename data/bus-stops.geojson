@@ -1,0 +1,1766 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2026-09-27T14:58:13Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/394941435",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "check_date:shelter": "2022-09-23",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Terminal de Ônibus",
+        "name": "Terminal de Ônibus",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7318582,
+          -23.5525888
+        ]
+      },
+      "id": "node/394941435"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1831379031",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Rua Do Matão Ref.: Pc Da Prefeitura/ R V",
+        "gtfs_id": "120010348",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "name": "Prefeitura / Física",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "8012-10",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.737677,
+          -23.559479
+        ]
+      },
+      "id": "node/1831379031"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1831379128",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "check_date:bin": "2023-06-06",
+        "description": "Ref.: R Francisco Dos Santos/ R Do Matao",
+        "gtfs_id": "120010342",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Acesso Vila Indiana",
+        "name": "Avenida Professor Lineu Prestes, 1374",
+        "network": "SPTRANS",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10;8022-10",
+        "shelter": "yes",
+        "source": "Circular 1 e Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.731683,
+          -23.568607
+        ]
+      },
+      "id": "node/1831379128"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1836936254",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Almeida Prado Ref.: Pc Da Prefeitura",
+        "gtfs_id": "120010359",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Prefeitura e Física",
+        "name": "Prefeitura e Física",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.737726,
+          -23.558941
+        ]
+      },
+      "id": "node/1836936254"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1836936262",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Ref.: Av Professor Ernesto de Morais Leme/ Pc Da Prefeitura",
+        "gtfs_id": "120010345",
+        "highway": "bus_stop",
+        "local_ref": "Museu de Arqueologia e Etnologia",
+        "name": "Museu de Arqueologia e Etnologia",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "shelter": "yes",
+        "short_name": "MAE"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.742161,
+          -23.559711
+        ]
+      },
+      "id": "node/1836936262"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1836936273",
+        "bus": "yes",
+        "description": "Avenida Professor Lineu Prestes, 2565 Ref.: R Clemente Pontes/ Av Professor Ernesto de Morais Leme",
+        "gtfs_id": "120010339",
+        "highway": "bus_stop",
+        "local_ref": "Hospital Universitário",
+        "name": "HU I",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.741416,
+          -23.563786
+        ]
+      },
+      "id": "node/1836936273"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1836936304",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Lineu Prestes, 2227 Ref.: Rua Clemente Pontes/ Avenida Professor Ernesto de Morais Leme",
+        "gtfs_id": "120010341",
+        "height": "3.388",
+        "highway": "bus_stop",
+        "local_ref": "Faculdade de Odontologia",
+        "name": "Odontologia",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73838,
+          -23.566677
+        ]
+      },
+      "id": "node/1836936304"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1836936308",
+        "bus": "yes",
+        "description": "Ref.: Rua Cipotânea",
+        "gtfs_id": "6811359",
+        "highway": "bus_stop",
+        "local_ref": "Portaria 3",
+        "name": "Rua Professor Orlando Marques de Paiva",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "8012-10;8022-10"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7404785,
+          -23.567978
+        ]
+      },
+      "id": "node/1836936308"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275224",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Luciano Gualberto Ref.: R V/ Pc Ramos de Azevedo",
+        "gtfs_id": "120010357",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Poli/ Biênio",
+        "name": "Parada Poli/ Biênio",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8012-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.732322,
+          -23.557818
+        ]
+      },
+      "id": "node/2006275224"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275228",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Luciano Gualberto Ref.: R V/ Pc Ramos de Azevedo",
+        "gtfs_id": "120010358",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "Poli-Eletrotécnica",
+        "name": "Parada Poli-Eletrotécnica",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "7181-10;7411-10;7725-10;8022-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.732678,
+          -23.557971
+        ]
+      },
+      "id": "node/2006275228"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275231",
+        "alt_name": "FEA",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Luciano Gualberto Ref.: R V/ Av Professor Lucio Martins Rodrigues",
+        "gtfs_id": "120010356",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "FEA",
+        "name": "Faculdade de Economia Administração e Contabilidade",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8012-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.729803,
+          -23.558951
+        ]
+      },
+      "id": "node/2006275231"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275234",
+        "alt_name": "Parada FAU II",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Luciano Gualberto",
+        "gtfs_id": "120010351",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "FAU II",
+        "name": "Parada Faculdade de Arquitetura e Urbanismo II",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8022-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.729933,
+          -23.559319
+        ]
+      },
+      "id": "node/2006275234"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275238",
+        "addr:city": "São Paulo",
+        "addr:housenumber": "600",
+        "addr:street": "Avenida Professor Luciano Gualberto",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Ref.: Avenida Professor Lucio Martins Rodrigues/ Rua do Anfiteatro",
+        "gtfs_id": "120010355",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Praça dos Bancos",
+        "name": "Parada Reitoria e Bancos",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "7181-10;7411-10;8012-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Cirular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.727336,
+          -23.560157
+        ]
+      },
+      "id": "node/2006275238"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275239",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Ref.: R Da Reitoria/ Pc Professor Rubiao Meira",
+        "gtfs_id": "120010329",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Restaurante Central",
+        "name": "Praça do Relógio Solar",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8012-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72026,
+          -23.560523
+        ]
+      },
+      "id": "node/2006275239"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275240",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Luciano Gualberto Ref.: Av Professor Lucio Martins Rodrigues/ R do Anfiteatro",
+        "gtfs_id": "120010352",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "IGC",
+        "name": "Parada Geociências",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "7181-10;7411-10;8022-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.727222,
+          -23.560651
+        ]
+      },
+      "id": "node/2006275240"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275241",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Ref.: Av Professor Lucio Martins Rodrigues/ R Do Anfiteatro",
+        "gtfs_id": "120010353",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "FFLCH",
+        "name": "Parada Letras",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "7181-10;7411-10;8022-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.724361,
+          -23.562058
+        ]
+      },
+      "id": "node/2006275241"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006275242",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Luciano Gualberto Ref.: Rua do Anfiteatro/ Praça Professor Jorge Americano",
+        "gtfs_id": "120010354",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Biblioteca José e Guita Mindlin",
+        "name": "Biblioteca Brasiliana",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "7181-10;7411-10;8012-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.723045,
+          -23.562368
+        ]
+      },
+      "id": "node/2006275242"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006281127",
+        "bench": "yes",
+        "bus": "yes",
+        "check_date:shelter": "2022-09-23",
+        "highway": "bus_stop",
+        "local_ref": "Portaria 2",
+        "name": "Portaria 2",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7299484,
+          -23.5518994
+        ]
+      },
+      "id": "node/2006281127"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006281134",
+        "bus": "yes",
+        "description": "Rua Professor Mello Moraes Ref.: Av Professor Almeida Prado/ Av Professor Lucio Martins Rodrigues",
+        "gtfs_id": "120010368",
+        "highway": "bus_stop",
+        "local_ref": "Poli-Mecânica",
+        "name": "Poli-Mecânica",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10;8032-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.728708,
+          -23.552854
+        ]
+      },
+      "id": "node/2006281134"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006281137",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Rua Professor Mello Moraes Ref.: R Do Anfiteatro",
+        "gtfs_id": "120010370",
+        "highway": "bus_stop",
+        "local_ref": "Psicologia 2",
+        "name": "Psicologia 2",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.724769,
+          -23.55446
+        ]
+      },
+      "id": "node/2006281137"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006281141",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ref.: Av Professor Lucio Martins Rodrigues",
+        "gtfs_id": "120010369",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Praça do Relógio",
+        "name": "Praça do Relógio",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10;8032-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.724043,
+          -23.555317
+        ]
+      },
+      "id": "node/2006281141"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006295775",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Ref.: Raia Olímpica",
+        "gtfs_id": "1211399",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Raia Olímpica",
+        "name": "Raia Olímpica",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8022-10",
+        "shelter": "yes",
+        "source": "Circular 2",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.720327,
+          -23.5568106
+        ]
+      },
+      "id": "node/2006295775"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006295776",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ref.: Travessa 8",
+        "gtfs_id": "1211398",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "CRUSP",
+        "name": "CRUSP II",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8012-10;8032-10",
+        "shelter": "yes",
+        "source": "Circular 1",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7199626,
+          -23.5573439
+        ]
+      },
+      "id": "node/2006295776"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006295777",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "gtfs_id": "1211397",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Acesso CPTM 2",
+        "name": "Acesso CPTM 2",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "network:wikipedia": "pt:São Paulo Transporte",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8022-10",
+        "shelter": "yes",
+        "source": "Circular 2",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7131316,
+          -23.5603947
+        ]
+      },
+      "id": "node/2006295777"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006295778",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "gtfs_id": "1211396",
+        "highway": "bus_stop",
+        "local_ref": "Acesso CPTM 1",
+        "name": "Acesso CPTM 1",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8012-10;8032-10",
+        "shelter": "yes",
+        "source": "Circular 1",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.713416,
+          -23.5606958
+        ]
+      },
+      "id": "node/2006295778"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006295779",
+        "bus": "yes",
+        "description": "Ref.: Pc Professor Reinaldo Porchart/ R Do Anfiteatro",
+        "gtfs_id": "120010378",
+        "highway": "bus_stop",
+        "local_ref": "Educação Física II",
+        "name": "Rua Professor Mello Moraes",
+        "network": "SPTRANS",
+        "public_transport": "platform",
+        "route_ref": "8022-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.712721,
+          -23.563621
+        ]
+      },
+      "id": "node/2006295779"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006295780",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bus": "yes",
+        "description": "Ref.: Avenida Da Universidade",
+        "gtfs_id": "1211395",
+        "highway": "bus_stop",
+        "local_ref": "Educação Física I",
+        "name": "Educação Física I",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8012-10;8032-10",
+        "shelter": "yes",
+        "source": "Circular 1",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7130483,
+          -23.5642276
+        ]
+      },
+      "id": "node/2006295780"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006303582",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Almeida Prado Ref.: Av Professor Mello de Morais/ Pc Ramos de Azevedo",
+        "gtfs_id": "120010362",
+        "highway": "bus_stop",
+        "local_ref": "Poli-Metalurgia",
+        "name": "Poli-Metalurgia",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;8012-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.731832,
+          -23.552765
+        ]
+      },
+      "id": "node/2006303582"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006303583",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Almeida Prado Ref.: Av Professor Mello de Morais/ Pc Ramos de Azevedo",
+        "gtfs_id": "120010361",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "Poli-Civil",
+        "name": "Poli-Civil",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "7181-10;7411-10;8012-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.733507,
+          -23.555743
+        ]
+      },
+      "id": "node/2006303583"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006303584",
+        "alt_name": "IPT",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Almeida Prado Ref.: Av Professor Mello de Morais/ Pc Ramos de Azevedo",
+        "gtfs_id": "120010360",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "IPT",
+        "name": "Instituto de Pesquisas Tecnologicas",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "7181-10;7411-10;8022-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.73379,
+          -23.556039
+        ]
+      },
+      "id": "node/2006303584"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006303585",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ref.: Pc Professor Rubiao Meira/ Pc Professor Reinaldo Porchart",
+        "gtfs_id": "120010328",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Faculdade de Educação",
+        "name": "Educação",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8012-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7161545,
+          -23.5632567
+        ]
+      },
+      "id": "node/2006303585"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006303586",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ref.: Pc Professor Rubiao Meira/ Pc Professor Reinaldo Porchart",
+        "gtfs_id": "120010330",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Paço das Artes",
+        "name": "Instituto Butantan",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8022-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7163636,
+          -23.5635936
+        ]
+      },
+      "id": "node/2006303586"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006325661",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Rua Do Matão Ref.: Pc Da Prefeitura/ R V",
+        "gtfs_id": "120010350",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "name": "IAG",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "8012-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.734486,
+          -23.559661
+        ]
+      },
+      "id": "node/2006325661"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006325667",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Rua Do Matão Ref.: Pc Da Prefeitura/ R V",
+        "gtfs_id": "120010349",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Física",
+        "name": "Fisica",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;8022-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7348343,
+          -23.5596849
+        ]
+      },
+      "id": "node/2006325667"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006325671",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "covered": "yes",
+        "description": "Ref.: Rua do Lago",
+        "gtfs_id": "1211268",
+        "highway": "bus_stop",
+        "local_ref": "FAU I",
+        "name": "Faculdade de Arquitetura e Urbanismo I",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8012-10",
+        "shelter": "yes",
+        "short_name": "FAU I",
+        "source": "Circular 1",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7308988,
+          -23.5606404
+        ]
+      },
+      "id": "node/2006325671"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006325674",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "covered": "yes",
+        "description": "Ref.: Oceonográfico",
+        "gtfs_id": "1211269",
+        "highway": "bus_stop",
+        "local_ref": "Oceanográfico",
+        "name": "Oceanográfico",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "ref": "Oceonográfico",
+        "route_ref": "8022-10",
+        "shelter": "yes",
+        "source": "Circular 2",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7307602,
+          -23.5608706
+        ]
+      },
+      "id": "node/2006325674"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2006325681",
+        "addr:city": "São Paulo",
+        "bus": "yes",
+        "description": "Rua do Matão, 278 Ref.: 277 Avenida Proflineu Prestes",
+        "gtfs_id": "1207042",
+        "highway": "bus_stop",
+        "local_ref": "Instituto de Biociências",
+        "name": "Instituto de Biociências",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8012-10",
+        "shelter": "yes",
+        "source": "Circular 1",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7301497,
+          -23.5661415
+        ]
+      },
+      "id": "node/2006325681"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709309",
+        "addr:city": "São Paulo",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Rua do Matão, 278 Ref.: Rua Cidade Universitária",
+        "gtfs_id": "1207041",
+        "highway": "bus_stop",
+        "local_ref": "Instituto de Biociências",
+        "name": "Instituto de Biociências",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "8022-10",
+        "source": "Circular 2",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7303118,
+          -23.5661238
+        ]
+      },
+      "id": "node/2377709309"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709314",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ref.: R Do Lago/ R Do Matao",
+        "gtfs_id": "120010335",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Rua do Lago",
+        "name": "Rua do Lago",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.728973,
+          -23.567542
+        ]
+      },
+      "id": "node/2377709314"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709319",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ref.: Av Professor Ernesto de Morais Leme/ Pc Da Prefeitura",
+        "gtfs_id": "120010346",
+        "highway": "bus_stop",
+        "local_ref": "Acesso a Rio Pequeno",
+        "name": "Avenida Professor Almeida Prado, 1466",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes",
+        "short_name": "MAE"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7418583,
+          -23.5598734
+        ]
+      },
+      "id": "node/2377709319"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709322",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Lineu Prestes, 748 Ref.: Praça Professor Jorge Americano/ Rua do Lago",
+        "gtfs_id": "120010333",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Farmácia e Química",
+        "name": "Farmácia e Química I",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72486,
+          -23.565346
+        ]
+      },
+      "id": "node/2377709322"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709324",
+        "alt_name": "IPEN",
+        "bus": "yes",
+        "description": "Avenida Professor Lineu Prestes, 2242 Ref.: Rua Clemente Pontes/ Avenida Professor Ernesto de Morais Leme",
+        "gtfs_id": "120010337",
+        "highway": "bus_stop",
+        "local_ref": "IPEN",
+        "name": "Instituto de Pesquisas Energéticas e Nucleares",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.738512,
+          -23.566057
+        ]
+      },
+      "id": "node/2377709324"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709325",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ref.: Av Da Universidade/ Av Afranio Peixoto",
+        "gtfs_id": "120010331",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Academia de Polícia",
+        "name": "Academia de Polícia",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8012-10;8022-10;8032-10;809U-10",
+        "shelter": "yes",
+        "source": "Circular 1 e Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.713199,
+          -23.565429
+        ]
+      },
+      "id": "node/2377709325"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709326",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Lineu Prestes, 1374 Ref.: Rua Francisco dos Santos/ Rua do Matão",
+        "gtfs_id": "120010336",
+        "highway": "bus_stop",
+        "local_ref": "Biomédicas",
+        "name": "Biomédicas",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.731898,
+          -23.568245
+        ]
+      },
+      "id": "node/2377709326"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709327",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Lineu Prestes, 913 Ref.: Pc Professor Jorge Americano/ R Do Lago",
+        "gtfs_id": "120010343",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "CEPAM",
+        "name": "Farmácia e Química II",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7253679,
+          -23.5659045
+        ]
+      },
+      "id": "node/2377709327"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709328",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Lineu Prestes, 338 Ref.: Praça Professor Jorge Americano/ Rua do Lago",
+        "gtfs_id": "120010344",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Instituto Butantan",
+        "name": "Parada História e Geografia II",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.722204,
+          -23.564197
+        ]
+      },
+      "id": "node/2377709328"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709330",
+        "addr:city": "São Paulo",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Lineu Prestes, 159 Ref.: Avenida Da Universidade",
+        "gtfs_id": "1207032",
+        "highway": "bus_stop",
+        "lit": "no",
+        "local_ref": "Casa de Cultura Japonesa",
+        "name": "Cultura Japonesa",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7181-10;7411-10;7725-10;8022-10;809U-10",
+        "shelter": "yes",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7195911,
+          -23.5628168
+        ]
+      },
+      "id": "node/2377709330"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709331",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Ref.: Praça Professor Jorge Americano/ Rua do Lago",
+        "gtfs_id": "120010332",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "FFLCH",
+        "name": "História e Geografia I",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "operator": "SPTrans",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.722581,
+          -23.564087
+        ]
+      },
+      "id": "node/2377709331"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709332",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Lineu Prestes, 950 Ref.: Pc Professor Jorge Americano/ R Do Lago",
+        "gtfs_id": "120010334",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Biblioteca da Farmácia e Química",
+        "name": "Biblioteca Farmácia e Química",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.727019,
+          -23.566488
+        ]
+      },
+      "id": "node/2377709332"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377709333",
+        "bus": "yes",
+        "description": "Avenida Professor Lineu Prestes, 2468 Ref.: R Clemente Pontes/ Av Professor Ernesto de Morais Leme",
+        "gtfs_id": "120010338",
+        "highway": "bus_stop",
+        "local_ref": "Hospital Universitário",
+        "name": "HU II",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "short_name": "HU",
+        "source": "Circular 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.740723,
+          -23.563891
+        ]
+      },
+      "id": "node/2377709333"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377716197",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Lúcio Martins Rodrigues Ref.: Av Professor Luciano Gualberto/ Av Professor Mello de Morais",
+        "gtfs_id": "120010374",
+        "highway": "bus_stop",
+        "local_ref": "Escola de Comunicações e Artes",
+        "name": "Escola de Comunicações e Artes",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "shelter": "yes",
+        "short_name": "ECA",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.726901,
+          -23.557807
+        ]
+      },
+      "id": "node/2377716197"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377716198",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Lúcio Martins Rodrigues Ref.: Av Professor Luciano Gualberto/ Av Professor Mello de Morais",
+        "gtfs_id": "120010372",
+        "highway": "bus_stop",
+        "local_ref": "Poli-Hidráulica",
+        "name": "Poli-Hidráulica",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "shelter": "yes",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.726306,
+          -23.556162
+        ]
+      },
+      "id": "node/2377716198"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2377716200",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Lúcio Martins Rodrigues Ref.: Av Professor Luciano Gualberto/ Av Professor Mello de Morais",
+        "gtfs_id": "120010373",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "local_ref": "Centro de Difusão Internacional",
+        "name": "Centro de Difusão Internacional",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "shelter": "yes",
+        "short_name": "CDI",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.727274,
+          -23.5578097
+        ]
+      },
+      "id": "node/2377716200"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3978183960",
+        "bus": "yes",
+        "description": "Avenida Professor Lineu Prestes, 2415 Ref.: Rua Clemente Pontes/ Avenida Professor Ernesto de Morais Leme",
+        "gtfs_id": "120010340",
+        "highway": "bus_stop",
+        "local_ref": "Biomédicas",
+        "name": "Biomédicas",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "source": "Circular 1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.739707,
+          -23.564737
+        ]
+      },
+      "id": "node/3978183960"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3978203161",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "description": "Avenida Professor Almeida Prado Ref.: Av Professor Ernesto de Morais Leme",
+        "gtfs_id": "120010347",
+        "highway": "bus_stop",
+        "local_ref": "Prefeitura do Campus da Capital",
+        "name": "Cocesp II",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7393806,
+          -23.5598475
+        ]
+      },
+      "id": "node/3978203161"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4046028437",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Avenida Professor Lúcio Martins Rodrigues Ref.: Av Professor Luciano Gualberto",
+        "gtfs_id": "120010375",
+        "highway": "bus_stop",
+        "name": "Psicologia I",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8012-10",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7258836,
+          -23.5561248
+        ]
+      },
+      "id": "node/4046028437"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4394813199",
+        "bench": "no",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Seade",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7274949,
+          -23.567091
+        ]
+      },
+      "id": "node/4394813199"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8149400399",
+        "bench": "yes",
+        "bus": "yes",
+        "description": "Rua Prof. Mello Moraes Ref.: Avenida Professor Lucio Martins Rodrigues",
+        "gtfs_id": "120010371",
+        "highway": "bus_stop",
+        "name": "Portaria 2",
+        "network": "SPTrans",
+        "network:wikidata": "Q7392689",
+        "public_transport": "platform",
+        "route_ref": "701U-10;702U-10;7725-10;8022-10",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7279775,
+          -23.5528471
+        ]
+      },
+      "id": "node/8149400399"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9684032743",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "Avenida da Universidade, 135-259",
+        "network": "EMTU",
+        "network:short": "EMTU",
+        "network:wikidata": "Q5374439",
+        "network:wikipedia": "pt:Empresa Metropolitana de Transportes Urbanos de São Paulo",
+        "public_transport": "platform",
+        "public_transport:version": "2",
+        "route_ref": "280BI1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7151233,
+          -23.5637893
+        ]
+      },
+      "id": "node/9684032743"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9684032795",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "departures_board": "no",
+        "highway": "bus_stop",
+        "name": "Avenida Professor Luciano Gualberto, 462",
+        "network": "EMTU",
+        "network:short": "EMTU",
+        "network:wikidata": "Q5374439",
+        "network:wikipedia": "pt:Empresa Metropolitana de Transportes Urbanos de São Paulo",
+        "public_transport": "platform",
+        "public_transport:version": "2",
+        "route_ref": "280BI1",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7260198,
+          -23.5612397
+        ]
+      },
+      "id": "node/9684032795"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9684032796",
+        "bus": "yes",
+        "departures_board": "no",
+        "highway": "bus_stop",
+        "name": "Avenida Professor Luciano Gualberto, 774",
+        "network": "EMTU",
+        "network:short": "EMTU",
+        "network:wikidata": "Q5374439",
+        "network:wikipedia": "pt:Empresa Metropolitana de Transportes Urbanos de São Paulo",
+        "public_transport": "platform",
+        "public_transport:version": "2",
+        "route_ref": "280BI1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7285068,
+          -23.5600163
+        ]
+      },
+      "id": "node/9684032796"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12232311373",
+        "bench": "yes",
+        "bin": "yes",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "lit": "yes",
+        "name:signed": "no",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7237369,
+          -23.5615351
+        ]
+      },
+      "id": "node/12232311373"
+    }
+  ]
+}
