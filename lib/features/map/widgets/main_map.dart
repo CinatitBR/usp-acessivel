@@ -7,6 +7,7 @@ import 'package:maplibre/maplibre.dart';
 
 import 'package:usp_acessivel/core/theme/app_colors.dart';
 import 'package:usp_acessivel/core/utils/utils.dart';
+import 'package:usp_acessivel/features/map/models/map_report_model.dart';
 import 'package:usp_acessivel/features/map/models/route_accessibility_point.dart';
 
 class MainMap extends StatefulWidget {
@@ -15,6 +16,8 @@ class MainMap extends StatefulWidget {
     required this.onSelect,
     this.targetCenter,
     this.onReportSelect,
+    this.onReportSelectWithId,
+    this.mapReports = const [],
     this.routeGeoJson,
     this.routeBounds,
     this.routeAccessibilityPoints = const [],
@@ -25,6 +28,8 @@ class MainMap extends StatefulWidget {
 
   final void Function(String) onSelect;
   final VoidCallback? onReportSelect;
+  final ValueChanged<String>? onReportSelectWithId;
+  final List<MapReport> mapReports;
   final Geographic? targetCenter;
   final Map<String, dynamic>? routeGeoJson;
   final LngLatBounds? routeBounds;
@@ -76,9 +81,79 @@ class _MainMapState extends State<MainMap> {
       _updateRouteAccessibilitySource();
     }
 
+    if (widget.mapReports != oldWidget.mapReports) {
+      _updateMapReportsSource();
+    }
+
     if (widget.styleUrl != oldWidget.styleUrl) {
       _controller?.setStyle(widget.styleUrl);
     }
+  }
+
+  Future<void> _updateMapReportsSource() async {
+    try {
+      final features = widget.mapReports.map((report) {
+        return {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [report.lon, report.lat],
+          },
+          'properties': {
+            'id': report.id,
+            'icon': report.iconId,
+            'reportType': report.reportType,
+            'severity': report.severity,
+          },
+        };
+      }).toList();
+
+      await _controller?.style?.updateGeoJsonSource(
+        id: 'map_reports',
+        data: jsonEncode({'type': 'FeatureCollection', 'features': features}),
+      );
+    } catch (e) {
+      debugPrint('Error updating map reports: $e');
+    }
+  }
+
+  Future<void> _addReportBadge(
+    StyleController style, {
+    required String id,
+    required IconData icon,
+    required Color bgColor,
+  }) async {
+    await style.addImageFromCanvas(
+      id: id,
+      width: 64,
+      height: 64,
+      painter: (canvas) {
+        final bgPaint = Paint()
+          ..color = bgColor
+          ..style = PaintingStyle.fill;
+        final borderPaint = Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.0;
+
+        canvas.drawCircle(const Offset(32, 32), 28, bgPaint);
+        canvas.drawCircle(const Offset(32, 32), 28, borderPaint);
+
+        final tp = TextPainter(textDirection: TextDirection.ltr)
+          ..text = TextSpan(
+            text: String.fromCharCode(icon.codePoint),
+            style: TextStyle(
+              fontSize: 30,
+              fontFamily: icon.fontFamily,
+              package: icon.fontPackage,
+              color: Colors.white,
+            ),
+          )
+          ..layout();
+
+        tp.paint(canvas, Offset((64 - tp.width) / 2, (64 - tp.height) / 2));
+      },
+    );
   }
 
   Future<void> _updateRouteAccessibilitySource() async {
@@ -143,13 +218,17 @@ class _MainMapState extends State<MainMap> {
       return;
     }
 
-    // Check for map reports first
+    // Check for map reports
     final featuresReports = controller.featuresAtPoint(
       event.screenPoint,
       layerIds: ['map_reports_layer'],
     );
     if (featuresReports.isNotEmpty) {
-      if (widget.onReportSelect != null) {
+      final reportFeature = featuresReports.first;
+      final reportId = reportFeature.properties['id'] as String?;
+      if (reportId != null && widget.onReportSelectWithId != null) {
+        widget.onReportSelectWithId!(reportId);
+      } else if (widget.onReportSelect != null) {
         widget.onReportSelect!();
       }
       return; // Stop processing other clicks if a report was clicked
@@ -246,16 +325,28 @@ class _MainMapState extends State<MainMap> {
     );
 
     // Map reports source
-    final mapReportsFeatureCollection = FeatureCollection([
-      Feature<Point>(
-        geometry: Point(Position.create(x: -46.72695, y: -23.56289)),
-        properties: {'type': 'report'},
-      ),
-    ]);
+    final mapReportsFeatures = widget.mapReports.map((report) {
+      return {
+        'type': 'Feature',
+        'geometry': {
+          'type': 'Point',
+          'coordinates': [report.lon, report.lat],
+        },
+        'properties': {
+          'id': report.id,
+          'icon': report.iconId,
+          'reportType': report.reportType,
+          'severity': report.severity,
+        },
+      };
+    }).toList();
     await style.addSource(
       GeoJsonSource(
         id: 'map_reports',
-        data: mapReportsFeatureCollection.toString(),
+        data: jsonEncode({
+          'type': 'FeatureCollection',
+          'features': mapReportsFeatures,
+        }),
       ),
     );
 
@@ -359,6 +450,99 @@ class _MainMapState extends State<MainMap> {
       },
     );
 
+    // Map report badges
+    // Path imperfections (Yellow for moderate, Red for severe)
+    await _addReportBadge(
+      style,
+      id: 'report-pothole-moderate',
+      icon: Icons.radio_button_checked_rounded,
+      bgColor: AppColors.warning,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-pothole-severe',
+      icon: Icons.radio_button_checked_rounded,
+      bgColor: AppColors.error,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-pothole',
+      icon: Icons.radio_button_checked_rounded,
+      bgColor: AppColors.warning,
+    );
+
+    await _addReportBadge(
+      style,
+      id: 'report-irregular_surface-moderate',
+      icon: Icons.terrain_rounded,
+      bgColor: AppColors.warning,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-irregular_surface-severe',
+      icon: Icons.terrain_rounded,
+      bgColor: AppColors.error,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-irregular_surface',
+      icon: Icons.terrain_rounded,
+      bgColor: AppColors.warning,
+    );
+
+    await _addReportBadge(
+      style,
+      id: 'report-narrow_sidewalk-moderate',
+      icon: Icons.compare_arrows_rounded,
+      bgColor: AppColors.warning,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-narrow_sidewalk-severe',
+      icon: Icons.compare_arrows_rounded,
+      bgColor: AppColors.error,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-narrow_sidewalk',
+      icon: Icons.compare_arrows_rounded,
+      bgColor: AppColors.warning,
+    );
+
+    // Accessibility issues (Blue)
+    await _addReportBadge(
+      style,
+      id: 'report-inaccessible_entrance',
+      icon: Icons.no_meeting_room_rounded,
+      bgColor: AppColors.primary,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-inaccessible_floor',
+      icon: Icons.layers_clear_rounded,
+      bgColor: AppColors.primary,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-broken_elevator',
+      icon: Icons.elevator_rounded,
+      bgColor: AppColors.primary,
+    );
+    await _addReportBadge(
+      style,
+      id: 'report-inaccessible_bathroom',
+      icon: Icons.wc_rounded,
+      bgColor: AppColors.primary,
+    );
+
+    // Other & fallback
+    await _addReportBadge(
+      style,
+      id: 'report-other',
+      icon: Icons.help_outline_rounded,
+      bgColor: AppColors.neutral[600]!,
+    );
+
     // --- Layers ---
     // Ways layer
     await style.addLayer(
@@ -397,12 +581,12 @@ class _MainMapState extends State<MainMap> {
         sourceId: 'map_reports',
         id: 'map_reports_layer',
         layout: {
-          'icon-image': 'report-icon',
-          'icon-size': 1.0,
+          'icon-image': ['get', 'icon'],
+          'icon-size': 0.5,
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
         },
-        minZoom: 14,
+        minZoom: 13,
       ),
     );
 

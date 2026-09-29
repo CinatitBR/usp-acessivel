@@ -1,11 +1,14 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:maplibre/maplibre.dart';
 import 'package:usp_acessivel/features/map/models/building_model.dart';
+import 'package:usp_acessivel/features/map/models/map_report_model.dart';
 import 'package:usp_acessivel/features/map/models/map_style.dart';
 import 'package:usp_acessivel/features/map/models/route_accessibility_point.dart';
 import 'package:usp_acessivel/features/map/repositories/building_repository.dart';
 import 'package:usp_acessivel/features/map/services/building_service.dart';
 import 'package:usp_acessivel/features/map/services/directions_service.dart';
+import 'package:usp_acessivel/features/map/services/map_report_service.dart';
 import 'package:usp_acessivel/features/visual_route/services/visual_route_service.dart';
 
 class MapController extends ChangeNotifier {
@@ -13,19 +16,27 @@ class MapController extends ChangeNotifier {
   final BuildingService _buildingService;
   final DirectionsService _directionsService;
   final VisualRouteService _visualRouteService;
+  final MapReportService _mapReportService;
 
   MapController({
     BuildingRepository? buildingRepository,
     BuildingService? buildingService,
     DirectionsService? directionsService,
     VisualRouteService? visualRouteService,
+    MapReportService? mapReportService,
   }) : _buildingRepository = buildingRepository ?? BuildingRepository.instance,
        _buildingService = buildingService ?? BuildingService(),
        _directionsService = directionsService ?? DirectionsService(),
-       _visualRouteService = visualRouteService ?? VisualRouteService();
+       _visualRouteService = visualRouteService ?? VisualRouteService(),
+       _mapReportService = mapReportService ?? MapReportService();
 
   // Map style (Basemap)
   AppMapStyle currentMapStyle = AppMapStyle.liberty;
+
+  // Map Reports data & selection
+  List<MapReport> mapReports = [];
+  MapReport? selectedMapReport;
+  bool isLoadingMapReports = false;
 
   // Buildings data & selection
   List<Building> buildingEntries = [];
@@ -67,15 +78,64 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Loads the initial list of buildings from repository
+  /// Loads the initial list of buildings and map reports
   Future<void> loadData() async {
     buildingEntries = await _buildingRepository.getBuildingEntries();
+    await fetchMapReports();
+    notifyListeners();
+  }
+
+  /// Loads reports from backend for the campus bounding box
+  Future<void> fetchMapReports() async {
+    isLoadingMapReports = true;
+    notifyListeners();
+
+    try {
+      mapReports = await _mapReportService.getMapReports(
+        minLat: -23.572641,
+        maxLat: -23.549471,
+        minLon: -46.745496,
+        maxLon: -46.710219,
+      );
+    } catch (e) {
+      debugPrint('Error loading map reports: $e');
+    } finally {
+      isLoadingMapReports = false;
+      notifyListeners();
+    }
+  }
+
+  /// Select a report by ID to show its details in the top banner
+  void selectMapReport(String? reportId) {
+    if (reportId == null) {
+      dismissSelectedMapReport();
+      return;
+    }
+    // Close other sheets
+    selectedBuilding = null;
+    selectedBusStop = null;
+    showAllVisualRoutes = false;
+    showActionsSheet = false;
+
+    selectedMapReport = mapReports.firstWhereOrNull((r) => r.id == reportId);
+    if (selectedMapReport != null) {
+      targetCenter = Geographic(
+        lat: selectedMapReport!.lat,
+        lon: selectedMapReport!.lon,
+      );
+    }
+    notifyListeners();
+  }
+
+  void dismissSelectedMapReport() {
+    selectedMapReport = null;
     notifyListeners();
   }
 
   /// Handles selecting a building by name (e.g. from map tap)
   void selectBuilding(String? name) {
     selectedBusStop = null;
+    selectedMapReport = null;
     final building = buildingEntries.cast<Building?>().firstWhere(
       (b) => b?.name == name,
       orElse: () => null,
@@ -101,6 +161,7 @@ class MapController extends ChangeNotifier {
   /// Handles selecting a building from search bar suggestions
   void selectBuildingFromSearch(Building selection) {
     selectedBusStop = null;
+    selectedMapReport = null;
     showAllVisualRoutes = false;
     selectedBuilding = selection.name;
     targetCenter = Geographic(
@@ -118,6 +179,7 @@ class MapController extends ChangeNotifier {
 
   void selectBusStop(Map<String, dynamic> busStop) {
     selectedBuilding = null;
+    selectedMapReport = null;
     showAllVisualRoutes = false;
     showActionsSheet = false;
     selectedBusStop = busStop;
@@ -152,6 +214,7 @@ class MapController extends ChangeNotifier {
   void openAllVisualRoutes() {
     selectedBuilding = null;
     selectedBusStop = null;
+    selectedMapReport = null;
     showAllVisualRoutes = true;
     notifyListeners();
     fetchAllVisualRoutes();
@@ -181,6 +244,7 @@ class MapController extends ChangeNotifier {
     isDirectionsMode = true;
     selectedBuilding = null;
     selectedBusStop = null;
+    selectedMapReport = null;
     notifyListeners();
   }
 
@@ -290,6 +354,8 @@ class MapController extends ChangeNotifier {
   void openActionsSheet() {
     // Close other sheets, if any of them are open
     selectedBuilding = null;
+    selectedBusStop = null;
+    selectedMapReport = null;
     showAllVisualRoutes = false;
 
     showActionsSheet = true;

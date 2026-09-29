@@ -4,6 +4,7 @@ import 'package:usp_acessivel/features/map/widgets/bus_stop_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/community_actions_bottom_sheet.dart';
 import 'package:usp_acessivel/features/map/widgets/main_map.dart';
 import 'package:usp_acessivel/features/map/widgets/map_community_action_button.dart';
+import 'package:usp_acessivel/features/map/widgets/map_report_banner.dart';
 import 'package:usp_acessivel/features/map/widgets/map_style_button.dart';
 import 'package:usp_acessivel/features/map/widgets/map_top_overlay.dart';
 import 'package:usp_acessivel/features/map/widgets/route_accessibility_bottom_sheet.dart';
@@ -34,31 +35,6 @@ class _MapPageState extends State<MapPage> {
     super.dispose();
   }
 
-  void _showReportDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Escadaria da química',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          content: Text(
-            '⚠️ A escadaria que leva até o bandejão da química é longa e íngrime, '
-            'com degraus estreitos e corrimão defeituoso. ',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Fechar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -71,19 +47,34 @@ class _MapPageState extends State<MapPage> {
               routeGeoJson: _controller.routeGeoJson,
               routeBounds: _controller.routeBoundingBox,
               routeAccessibilityPoints: _controller.routeAccessibilityPoints,
+              mapReports: _controller.mapReports,
               onRouteAccessibilityPointSelect:
                   _controller.selectRouteAccessibilityPoint,
-              onReportSelect: _showReportDialog,
+              onReportSelectWithId: _controller.selectMapReport,
               onSelect: _controller.selectBuilding,
               onBusStopSelect: _controller.selectBusStop,
               styleUrl: _controller.currentMapStyle.url,
             ),
-            MapTopOverlay(controller: _controller),
+            if (_controller.selectedMapReport == null)
+              MapTopOverlay(controller: _controller),
             MapStyleButton(
               currentStyle: _controller.currentMapStyle,
               onStyleSelected: _controller.setMapStyle,
               bottom: 104,
             ),
+            if (_controller.selectedMapReport != null) ...[
+              // Backdrop to dismiss banner when tapping outside
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _controller.dismissSelectedMapReport,
+                ),
+              ),
+              MapReportBanner(
+                report: _controller.selectedMapReport!,
+                onDismissed: _controller.dismissSelectedMapReport,
+              ),
+            ],
             if (_controller.isDirectionsMode == false)
               MapCommunityActionButton(onPressed: _controller.openActionsSheet),
             if (_controller.selectedBusStop != null)
