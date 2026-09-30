@@ -10,6 +10,16 @@ import 'package:usp_acessivel/core/utils/utils.dart';
 import 'package:usp_acessivel/features/map/models/map_report_model.dart';
 import 'package:usp_acessivel/features/map/models/route_accessibility_point.dart';
 
+typedef WayReportRecord = ({
+  String id,
+  double lat,
+  double lon,
+  String reportClass,
+  String subclass,
+  String? imagePath,
+  String address,
+});
+
 class MainMap extends StatefulWidget {
   const MainMap({
     super.key,
@@ -18,6 +28,8 @@ class MainMap extends StatefulWidget {
     this.onReportSelect,
     this.onReportSelectWithId,
     this.mapReports = const [],
+    this.wayReports = const [],
+    this.onWayReportSelect,
     this.routeGeoJson,
     this.routeBounds,
     this.routeAccessibilityPoints = const [],
@@ -30,6 +42,8 @@ class MainMap extends StatefulWidget {
   final VoidCallback? onReportSelect;
   final ValueChanged<String>? onReportSelectWithId;
   final List<MapReport> mapReports;
+  final List<WayReportRecord> wayReports;
+  final ValueChanged<WayReportRecord>? onWayReportSelect;
   final Geographic? targetCenter;
   final Map<String, dynamic>? routeGeoJson;
   final LngLatBounds? routeBounds;
@@ -85,6 +99,10 @@ class _MainMapState extends State<MainMap> {
       _updateMapReportsSource();
     }
 
+    if (widget.wayReports != oldWidget.wayReports) {
+      _updateWayReportsSource();
+    }
+
     if (widget.styleUrl != oldWidget.styleUrl) {
       _controller?.setStyle(widget.styleUrl);
     }
@@ -114,6 +132,50 @@ class _MainMapState extends State<MainMap> {
       );
     } catch (e) {
       debugPrint('Error updating map reports: $e');
+    }
+  }
+
+  String _getWayReportIconId(String subclass) {
+    switch (subclass) {
+      case 'tree_blocking':
+        return 'way-report-tree_blocking';
+      case 'tree_roots':
+        return 'way-report-tree_roots';
+      case 'broken_sidewalk':
+        return 'way-report-broken_sidewalk';
+      case 'construction':
+        return 'way-report-construction';
+      case 'pothole':
+        return 'way-report-pothole';
+      default:
+        return 'way-report-default';
+    }
+  }
+
+  Future<void> _updateWayReportsSource() async {
+    try {
+      final features = widget.wayReports.map((report) {
+        return {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [report.lon, report.lat],
+          },
+          'properties': {
+            'id': report.id,
+            'icon': _getWayReportIconId(report.subclass),
+            'reportClass': report.reportClass,
+            'subclass': report.subclass,
+          },
+        };
+      }).toList();
+
+      await _controller?.style?.updateGeoJsonSource(
+        id: 'way_reports',
+        data: jsonEncode({'type': 'FeatureCollection', 'features': features}),
+      );
+    } catch (e) {
+      debugPrint('Error updating way reports: $e');
     }
   }
 
@@ -234,6 +296,24 @@ class _MainMapState extends State<MainMap> {
       return; // Stop processing other clicks if a report was clicked
     }
 
+    // Check for way reports
+    final featuresWayReports = controller.featuresAtPoint(
+      event.screenPoint,
+      layerIds: ['way_reports_layer'],
+    );
+    if (featuresWayReports.isNotEmpty) {
+      final reportFeature = featuresWayReports.first;
+      final reportId = reportFeature.properties['id'] as String?;
+      if (reportId != null && widget.onWayReportSelect != null) {
+        final match =
+            widget.wayReports.firstWhereOrNull((r) => r.id == reportId);
+        if (match != null) {
+          widget.onWayReportSelect!(match);
+          return;
+        }
+      }
+    }
+
     // Check for bus stops
     final featuresBusStops = controller.featuresAtPoint(
       event.screenPoint,
@@ -346,6 +426,32 @@ class _MainMapState extends State<MainMap> {
         data: jsonEncode({
           'type': 'FeatureCollection',
           'features': mapReportsFeatures,
+        }),
+      ),
+    );
+
+    // Way reports source
+    final wayReportsFeatures = widget.wayReports.map((report) {
+      return {
+        'type': 'Feature',
+        'geometry': {
+          'type': 'Point',
+          'coordinates': [report.lon, report.lat],
+        },
+        'properties': {
+          'id': report.id,
+          'icon': _getWayReportIconId(report.subclass),
+          'reportClass': report.reportClass,
+          'subclass': report.subclass,
+        },
+      };
+    }).toList();
+    await style.addSource(
+      GeoJsonSource(
+        id: 'way_reports',
+        data: jsonEncode({
+          'type': 'FeatureCollection',
+          'features': wayReportsFeatures,
         }),
       ),
     );
@@ -543,6 +649,44 @@ class _MainMapState extends State<MainMap> {
       bgColor: AppColors.neutral[600]!,
     );
 
+    // Way reports badges
+    await _addReportBadge(
+      style,
+      id: 'way-report-tree_blocking',
+      icon: Icons.park_rounded,
+      bgColor: AppColors.warning,
+    );
+    await _addReportBadge(
+      style,
+      id: 'way-report-tree_roots',
+      icon: Icons.terrain_rounded,
+      bgColor: AppColors.warning,
+    );
+    await _addReportBadge(
+      style,
+      id: 'way-report-broken_sidewalk',
+      icon: Icons.warning_rounded,
+      bgColor: AppColors.warning,
+    );
+    await _addReportBadge(
+      style,
+      id: 'way-report-construction',
+      icon: Icons.construction_rounded,
+      bgColor: AppColors.error,
+    );
+    await _addReportBadge(
+      style,
+      id: 'way-report-pothole',
+      icon: Icons.radio_button_checked_rounded,
+      bgColor: AppColors.error,
+    );
+    await _addReportBadge(
+      style,
+      id: 'way-report-default',
+      icon: Icons.info_outline_rounded,
+      bgColor: AppColors.warning,
+    );
+
     // --- Layers ---
     // Ways layer
     await style.addLayer(
@@ -580,6 +724,21 @@ class _MainMapState extends State<MainMap> {
       SymbolStyleLayer(
         sourceId: 'map_reports',
         id: 'map_reports_layer',
+        layout: {
+          'icon-image': ['get', 'icon'],
+          'icon-size': 0.5,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+        minZoom: 13,
+      ),
+    );
+
+    // Way reports layer
+    await style.addLayer(
+      SymbolStyleLayer(
+        sourceId: 'way_reports',
+        id: 'way_reports_layer',
         layout: {
           'icon-image': ['get', 'icon'],
           'icon-size': 0.5,

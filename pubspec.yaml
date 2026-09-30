@@ -16,6 +16,7 @@ dependencies:
   flutter_image_compress: ^2.5.1
   flutter_svg: ^2.3.0
   geolocator: ^14.0.3
+  geocoding: ^5.0.0
   image_picker: ^1.2.3
   maplibre: ^0.3.5
   path: ^1.9.1
@@ -37,5 +38,6 @@ flutter:
     - assets/tiles/
     - assets/rotas-odonto/
     - assets/map-icons/
+    - assets/reports/
     - env.development
     - env.production
